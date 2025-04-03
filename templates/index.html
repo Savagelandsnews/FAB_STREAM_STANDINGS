@@ -1,0 +1,17 @@
+document.getElementById('urlForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const url = document.getElementById('urlInput').value;
+    try {
+        const response = await fetch('/update-url', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `url=${encodeURIComponent(url)}`
+        });
+        const data = await response.json();
+        alert(data.message || 'URL updated successfully');
+    } catch (error) {
+        alert('Error updating URL');
+    }
+}); 
