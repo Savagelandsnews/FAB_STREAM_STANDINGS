@@ -52,48 +52,68 @@ async def get_standings():
     global current_url, cache
     
     if not current_url:
+        logger.warning("No URL set for standings fetch")
         return JSONResponse(
             status_code=400,
             content={"error": "No URL set. Please set a URL first."}
         )
     
     try:
+        logger.info(f"Fetching standings from: {current_url}")
         async with aiohttp.ClientSession() as session:
             async with session.get(current_url) as response:
                 if response.status != 200:
+                    logger.error(f"Failed to fetch standings: HTTP {response.status}")
                     return JSONResponse(
                         status_code=503,
                         content={"error": "Unable to fetch standings"}
                     )
                 
                 html = await response.text()
+                logger.debug(f"Received HTML content length: {len(html)}")
                 
         soup = BeautifulSoup(html, 'html.parser')
         table = soup.find('table')
         
         if not table:
+            logger.error("No standings table found in the response")
+            logger.debug(f"HTML content: {html[:500]}...")  # Log first 500 chars
             return JSONResponse(
                 status_code=404,
                 content={"error": "No standings found"}
             )
         
         standings = []
-        for row in table.find_all('tr')[1:]:
+        for row in table.find_all('tr')[1:]:  # Skip header row
             cols = row.find_all('td')
             if len(cols) >= 3:
+                # Look for country/flag information
+                flag = None
+                player_cell = cols[1]
+                for element in player_cell.find_all(class_='flag'):
+                    flag_classes = [c for c in element['class'] if c != 'flag']
+                    if flag_classes:
+                        flag = flag_classes[0].upper()
+                        break
+                
                 standings.append({
                     'rank': cols[0].text.strip(),
                     'player': cols[1].text.strip(),
-                    'wins': cols[2].text.strip()
+                    'wins': cols[2].text.strip(),
+                    'flag': flag
                 })
+        
+        logger.info(f"Successfully fetched {len(standings)} standings entries")
+        if standings:
+            logger.debug(f"First entry: {standings[0]}")
         
         return JSONResponse(content={"standings": standings})
         
     except Exception as e:
-        logger.error(f"Error: {e}")
+        logger.error(f"Error fetching standings: {str(e)}")
         return JSONResponse(
             status_code=500,
-            content={"error": "Internal server error"}
+            content={"error": f"Internal server error: {str(e)}"}
         )
 
 @app.post("/update-url")
