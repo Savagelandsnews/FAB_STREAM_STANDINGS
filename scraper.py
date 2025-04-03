@@ -99,7 +99,27 @@ async def get_standings():
 @app.post("/update-url")
 async def update_url(url: str = Form(...)):
     global current_url
+    logger.info(f"Updating URL to: {url}")
     current_url = url
+    
+    # Validate the URL works
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url) as response:
+                if response.status != 200:
+                    logger.error(f"URL validation failed with status {response.status}")
+                    return JSONResponse(
+                        status_code=400,
+                        content={"success": False, "message": "Invalid URL - could not fetch standings"}
+                    )
+                logger.info("URL validation successful")
+    except Exception as e:
+        logger.error(f"URL validation error: {e}")
+        return JSONResponse(
+            status_code=400,
+            content={"success": False, "message": f"Invalid URL - {str(e)}"}
+        )
+    
     return JSONResponse(content={"success": True, "message": "URL updated successfully"})
 
 if __name__ == "__main__":
