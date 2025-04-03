@@ -77,7 +77,10 @@ async def get_standings():
         
         if not table:
             logger.error("No standings table found in the response")
-            logger.debug(f"HTML content: {html[:500]}...")  # Log first 500 chars
+            # Log more HTML details
+            logger.debug(f"HTML structure: {soup.prettify()[:1000]}...")  # First 1000 chars of formatted HTML
+            logger.debug(f"All tables found: {len(soup.find_all('table'))}")
+            logger.debug(f"All table-like elements: {soup.find_all(['table', 'div', 'section'])[:5]}")
             return JSONResponse(
                 status_code=404,
                 content={"error": "No standings found"}
