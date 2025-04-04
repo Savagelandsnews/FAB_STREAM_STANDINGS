@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FAB Tournament Standings - Runaways View</title>
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@700&display=swap" rel="stylesheet">
     <style>
         body {
             margin: 0;
@@ -16,15 +16,77 @@
             background-position: top left;
             background-repeat: no-repeat;
             overflow: hidden;
+            font-family: 'Bebas Neue', sans-serif;
         }
 
+        /* Right side player list container */
+        #standings-container {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            padding: 0px;
+            gap: 15px;
+            position: absolute;
+            width: 788px;
+            height: 786px;
+            left: 966px;
+            top: 222px;
+            z-index: 10;
+        }
+
+        /* Bottom player container - exact positions */
+        #bottom-players {
+            position: absolute;
+            left: 163px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            z-index: 10;
+        }
+
+        #bottom-players .frame:nth-child(1) {
+            top: 845px;
+        }
+
+        #bottom-players .frame:nth-child(2) {
+            top: 934px;
+        }
+
+        /* Player frame styling */
         .frame {
             position: relative;
-            margin-bottom: 15px;
             width: 788px;
             height: 74px;
+            filter: drop-shadow(0px 6.20061px 31.003px rgba(0, 0, 0, 0.8));
+            border-radius: 10px;
+            margin-bottom: 15px;
         }
 
+        /* Gold background */
+        .gold-background {
+            position: absolute;
+            width: 788px;
+            height: 74px;
+            left: 0px;
+            top: 0px;
+            background: linear-gradient(180deg, #CBA655 0%, #F0EBB6 24.93%, #DBB45F 57.57%, #B08F49 118.71%);
+            border-radius: 10px;
+            z-index: 1;
+        }
+
+        /* Black background */
+        .black-background {
+            position: absolute;
+            width: 660px;
+            height: 74px;
+            left: 0px;
+            top: 0px;
+            background: #000000;
+            box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+            z-index: 2;
+        }
+
+        /* Player name styling */
         .player-name {
             position: absolute;
             width: 387px;
@@ -41,13 +103,14 @@
             -webkit-text-fill-color: transparent;
             background-clip: text;
             text-fill-color: transparent;
-            z-index: 10;
+            z-index: 3;
             white-space: nowrap;
             overflow: hidden;
             display: flex;
             align-items: center;
         }
 
+        /* Player score styling */
         .player-score {
             position: absolute;
             width: 143px;
@@ -61,34 +124,12 @@
             line-height: 120%;
             text-align: right;
             color: #000000;
-            z-index: 10;
-        }
-
-        /* Main players on the right */
-        #standings-container {
-            position: absolute;
-            width: 788px;
-            top: 222px;
-            left: 966px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        /* Bottom players */
-        #bottom-players {
-            position: absolute;
-            width: 788px;
-            left: 163px;
-            bottom: 72px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
+            z-index: 3;
         }
     </style>
 </head>
 <body>
-    <!-- Players container -->
+    <!-- Main player container -->
     <div id="standings-container">
         <!-- Standings will be dynamically inserted here -->
     </div>
@@ -116,12 +157,8 @@
             { name: "CONNOR BRYANT", scrapedNames: ["Connor Bryant"] }
         ];
 
-        function normalizePlayerName(name) {
-            return name.trim();
-        }
-
         function findPlayerMatch(scrapedName, mappings) {
-            scrapedName = normalizePlayerName(scrapedName);
+            scrapedName = scrapedName.trim();
             for (const player of mappings) {
                 if (player.scrapedNames.includes(scrapedName)) {
                     return player;
@@ -133,6 +170,8 @@
         function createPlayerEntry(player, record) {
             return `
                 <div class="frame">
+                    <div class="gold-background"></div>
+                    <div class="black-background"></div>
                     <div class="player-name">${player}</div>
                     <div class="player-score">${record}</div>
                 </div>
@@ -173,7 +212,7 @@
                         }
                     });
 
-                    // Generate HTML for main players
+                    // Generate HTML for main players (right side)
                     let mainHtml = '';
                     MAIN_PLAYERS.forEach(player => {
                         const playerData = playerStatusMap.get(player.name);
@@ -223,6 +262,21 @@
 
         // Update every 30 seconds
         setInterval(updateStandings, 30000);
+
+        // Apply absolute positioning to bottom players after they're created
+        function repositionBottomPlayers() {
+            const bottomPlayers = document.querySelectorAll('#bottom-players .frame');
+            if (bottomPlayers.length === 2) {
+                bottomPlayers[0].style.position = 'absolute';
+                bottomPlayers[0].style.top = '845px';
+                bottomPlayers[1].style.position = 'absolute';
+                bottomPlayers[1].style.top = '934px';
+            }
+        }
+
+        // Apply positioning after initial load and each update
+        window.addEventListener('load', repositionBottomPlayers);
+        setInterval(repositionBottomPlayers, 30500);
     </script>
 </body>
 </html> 
