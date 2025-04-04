@@ -198,6 +198,25 @@
         .team-links a:hover {
             color: #008800;
         }
+
+        .view-armory,
+        .view-runaways,
+        .view-sigil,
+        .view-vampires,
+        .view-bluepitch {
+            color: #00aa00; /* Green color */
+            text-decoration: none;
+            font-weight: bold;
+            transition: color 0.3s;
+        }
+
+        .view-armory:hover,
+        .view-runaways:hover,
+        .view-sigil:hover,
+        .view-vampires:hover,
+        .view-bluepitch:hover {
+            color: #008800; /* Darker green on hover */
+        }
     </style>
 </head>
 <body>
@@ -237,7 +256,7 @@
                 <span id="streamUrl"></span>
                 <button class="copy-button" onclick="copyStreamUrl()">Copy</button>
             </div>
-            <a href="/stream" target="_blank" class="view-stream">Open Stream View in New Tab →</a>
+            <a href="/stream" target="_blank" class="view-stream">Open Stream View in New Tab →</a><br>
             <a href="/armory" target="_blank" class="view-armory">Open Armory Standings →</a><br>
             <a href="/runaways" target="_blank" class="view-runaways">Open Runaways Standings →</a><br>
             <a href="/sigil" target="_blank" class="view-sigil">Open Sigil Standings →</a><br>
