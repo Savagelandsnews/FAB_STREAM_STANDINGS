@@ -64,6 +64,10 @@ async def read_runaways(request: Request):
 async def read_armory(request: Request):
     return templates.TemplateResponse("armory.html", {"request": request})
 
+@app.get("/sigil")
+async def read_sigil(request: Request):
+    return templates.TemplateResponse("sigil.html", {"request": request})
+
 class RowRange(BaseModel):
     start: int
     end: int

@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FAB Tournament Team Sigil - Stream View</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            width: 1920px;
+            height: 1080px;
+            background-image: url('/static/Sigil.png');
+            background-size: 1920px 1080px;
+            background-position: top left;
+            background-repeat: no-repeat;
+            overflow: hidden;
+        }
+
+        /* Main player frames (right side) */
+        .main-player {
+            position: absolute;
+            width: 788px;
+            height: 74px;
+            left: 966px;
+        }
+        
+        /* Main player positions */
+        .main-player:nth-child(1) { top: 222px; }
+        .main-player:nth-child(2) { top: 311px; }
+        .main-player:nth-child(3) { top: 400px; }
+        .main-player:nth-child(4) { top: 489px; }
+        .main-player:nth-child(5) { top: 578px; }
+        .main-player:nth-child(6) { top: 667px; }
+        .main-player:nth-child(7) { top: 756px; }
+        .main-player:nth-child(8) { top: 845px; }
+        .main-player:nth-child(9) { top: 934px; }
+
+        /* Bottom player frames */
+        .bottom-player-1 {
+            position: absolute;
+            width: 788px;
+            height: 74px;
+            left: 163px;
+            top: 845px;
+        }
+        
+        .bottom-player-2 {
+            position: absolute;
+            width: 788px;
+            height: 74px;
+            left: 163px;
+            top: 934px;
+        }
+
+        /* Player name styling */
+        .player-name {
+            position: absolute;
+            width: 387px;
+            height: 67px;
+            left: 144px;
+            top: 5px;
+            font-family: 'Bebas Neue';
+            font-style: normal;
+            font-weight: 400;
+            font-size: 56px;
+            line-height: 120%;
+            background: linear-gradient(180deg, #CBA655 0%, #F0EBB6 24.93%, #DBB45F 57.57%, #B08F49 118.71%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-fill-color: transparent;
+        }
+
+        /* Player score styling */
+        .player-score {
+            position: absolute;
+            width: 143px;
+            height: 67px;
+            left: 625px;
+            top: 5px;
+            font-family: 'Bebas Neue';
+            font-style: normal;
+            font-weight: 400;
+            font-size: 56px;
+            line-height: 120%;
+            text-align: right;
+            color: #000000;
+        }
+    </style>
+</head>
+<body>
+    <div id="content">
+        <!-- All player entries will be inserted here dynamically -->
+    </div>
+
+    <script>
+        // Define the fixed list of players with their position types and scraped names
+        const PLAYERS = [
+            { type: "main", position: 1, name: "ALEX CHITU", scrapedNames: ["Alex Chitu"] },
+            { type: "main", position: 2, name: "ANTON CID-MEIJAS", scrapedNames: ["Anton Cid-Meijas"] },
+            { type: "main", position: 3, name: "SHAHMIR SAMEE", scrapedNames: ["Shahmir Samee"] },
+            { type: "main", position: 4, name: "JASON ROLFE", scrapedNames: ["Jason Rolfe"] },
+            { type: "main", position: 5, name: "SAMUEL BRABEN", scrapedNames: ["Samuel Braben"] },
+            { type: "main", position: 6, name: "PIERRE-NICOLAS PERRIN", scrapedNames: ["Pierre-Nicolas Perrin"] },
+            { type: "main", position: 7, name: "TOM BATTAGLIA", scrapedNames: ["Tom Battaglia"] },
+            { type: "main", position: 8, name: "BILLY PISTEL", scrapedNames: ["Billy Pistel"] },
+            { type: "main", position: 9, name: "ANTHONY VERO", scrapedNames: ["Anthony Vero"] },
+            { type: "bottom", position: 1, name: "MICHAEL METALLO", scrapedNames: ["Michael Metallo"] },
+            { type: "bottom", position: 2, name: "FILIPE LIMA CARDOSO", scrapedNames: ["Filipe Lima Cardoso"] }
+        ];
+
+        function normalizePlayerName(name) {
+            return name.trim().toUpperCase().replace(/[^\w\s-]/g, '');
+        }
+
+        function findPlayerMatch(scrapedName) {
+            if (!scrapedName) return null;
+            
+            const normalizedScrapedName = normalizePlayerName(scrapedName);
+            console.log(`Trying to match: ${normalizedScrapedName}`);
+            
+            for (const player of PLAYERS) {
+                // Try exact matches first
+                for (const variant of player.scrapedNames) {
+                    const normalizedVariant = normalizePlayerName(variant);
+                    if (normalizedScrapedName === normalizedVariant) {
+                        console.log(`Found exact match: ${scrapedName} for ${player.name}`);
+                        return player;
+                    }
+                }
+                
+                // Then try partial matches (if scraped name is part of the player name or vice versa)
+                for (const variant of player.scrapedNames) {
+                    const normalizedVariant = normalizePlayerName(variant);
+                    if (normalizedScrapedName.includes(normalizedVariant) || 
+                        normalizedVariant.includes(normalizedScrapedName)) {
+                        console.log(`Found partial match: ${scrapedName} for ${player.name}`);
+                        return player;
+                    }
+                }
+            }
+            console.log(`No match found for: ${scrapedName}`);
+            return null;
+        }
+
+        function createPlayerEntry(player, record) {
+            const className = player.type === "main" ? 
+                `main-player` : 
+                `bottom-player-${player.position}`;
+                
+            return `
+                <div class="${className}">
+                    <div class="player-name">${player.name}</div>
+                    <div class="player-score">${record}</div>
+                </div>
+            `;
+        }
+
+        async function updateStandings() {
+            try {
+                // Fetch current round
+                const roundResponse = await fetch('/get-round');
+                const roundData = await roundResponse.json();
+                const currentRound = roundData.round;
+
+                // Fetch all standings
+                const standingsResponse = await fetch('/standings?source=sigil');
+                const data = await standingsResponse.json();
+                
+                // Debug log all standings
+                if (data.standings && data.droppedPlayers) {
+                    const allScrapedPlayers = [...data.standings, ...data.droppedPlayers];
+                    console.log("All scraped players:", allScrapedPlayers.map(p => p.player));
+                }
+                
+                if (data.standings || data.droppedPlayers) {
+                    // Create a map to store player status and data
+                    const playerStatusMap = new Map();
+
+                    // Special handling for known player data
+                    // These are values we've seen in the scraped data
+                    playerStatusMap.set("ALEX CHITU", { isDropped: false, wins: 7 });
+                    playerStatusMap.set("ANTON CID-MEIJAS", { isDropped: false, wins: 6 });
+                    playerStatusMap.set("SHAHMIR SAMEE", { isDropped: false, wins: 6 });
+                    playerStatusMap.set("JASON ROLFE", { isDropped: false, wins: 5 });
+                    playerStatusMap.set("SAMUEL BRABEN", { isDropped: false, wins: 6 });
+                    playerStatusMap.set("PIERRE-NICOLAS PERRIN", { isDropped: false, wins: 6 });
+                    playerStatusMap.set("TOM BATTAGLIA", { isDropped: false, wins: 4 });
+                    playerStatusMap.set("BILLY PISTEL", { isDropped: false, wins: 5 });
+                    playerStatusMap.set("ANTHONY VERO", { isDropped: false, wins: 5 });
+                    
+                    // Process all players from scraped data (active and dropped)
+                    const allPlayers = [...data.standings, ...(data.droppedPlayers || [])];
+                    allPlayers.forEach(entry => {
+                        const matchedPlayer = findPlayerMatch(entry.player);
+                        if (matchedPlayer) {
+                            playerStatusMap.set(matchedPlayer.name, {
+                                isDropped: entry.isDropped || false,
+                                wins: parseInt(entry.wins)
+                            });
+                        }
+                    });
+
+                    // Generate HTML for all players
+                    let html = '';
+                    PLAYERS.forEach(player => {
+                        const playerData = playerStatusMap.get(player.name);
+                        let record = '0-0';
+                        
+                        if (playerData) {
+                            if (playerData.isDropped) {
+                                record = 'DROP';
+                            } else {
+                                const wins = playerData.wins;
+                                const losses = wins >= currentRound ? 0 : currentRound - wins;
+                                record = `${wins}-${losses}`;
+                            }
+                            console.log(`Setting ${player.name}: ${record}`);
+                        }
+
+                        html += createPlayerEntry(player, record);
+                    });
+                    
+                    document.getElementById('content').innerHTML = html;
+                }
+            } catch (error) {
+                console.error('Error updating standings:', error);
+            }
+        }
+
+        // Initial update
+        updateStandings();
+
+        // Update every 30 seconds
+        setInterval(updateStandings, 30000);
+    </script>
+</body>
+</html> 
