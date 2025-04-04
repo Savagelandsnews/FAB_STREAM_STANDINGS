@@ -23,10 +23,6 @@
             width: 788px;
             height: 74px;
             left: 566px;
-            filter: drop-shadow(0px 6.20061px 31.003px rgba(0, 0, 0, 0.8));
-            border-radius: 10px;
-            background: #000000;
-            box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
         }
 
         /* Frame positions */
@@ -57,6 +53,10 @@
             -webkit-text-fill-color: transparent;
             background-clip: text;
             text-fill-color: transparent;
+            white-space: nowrap;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
         }
 
         .flag {
@@ -116,6 +116,18 @@
             console.log(message);
         }
 
+        function fitText(element) {
+            const maxWidth = 387;
+            const originalFontSize = 56;
+            
+            element.style.fontSize = originalFontSize + 'px';
+            
+            while (element.scrollWidth > maxWidth && parseFloat(element.style.fontSize) > 20) {
+                const currentSize = parseFloat(element.style.fontSize);
+                element.style.fontSize = (currentSize - 1) + 'px';
+            }
+        }
+
         function createPlayerEntry(player, flag, score, index) {
             return `
                 <div class="frame">
@@ -158,6 +170,11 @@
                             index
                         ))
                         .join('');
+
+                    document.querySelectorAll('.player-name').forEach(nameElement => {
+                        fitText(nameElement);
+                    });
+                    
                     showDebug(`Updated standings: showing top 10 of ${data.standings.length} entries`);
                 } else {
                     showDebug('No standings data received');
@@ -172,6 +189,15 @@
 
         // Update every 30 seconds
         setInterval(updateStandings, 30000);
+
+        // Add resize observer to handle window size changes
+        const resizeObserver = new ResizeObserver(entries => {
+            document.querySelectorAll('.player-name').forEach(nameElement => {
+                fitText(nameElement);
+            });
+        });
+
+        resizeObserver.observe(document.body);
     </script>
 </body>
 </html>
