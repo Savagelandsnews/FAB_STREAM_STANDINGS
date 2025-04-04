@@ -75,6 +75,42 @@
             background-color: rgba(255, 0, 0, 0.2);
             color: #ff4444;
         }
+
+        .stream-info {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #333;
+            border-radius: 4px;
+        }
+
+        .stream-info h2 {
+            color: #00aa00;
+            margin-top: 0;
+        }
+
+        .stream-url {
+            background-color: #1a1a1a;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            margin: 10px 0;
+        }
+
+        .copy-button {
+            background-color: #4a4a4a;
+            margin-left: 10px;
+        }
+
+        .view-stream {
+            display: inline-block;
+            margin-top: 10px;
+            text-decoration: none;
+            color: #00aa00;
+        }
+
+        .view-stream:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
@@ -85,9 +121,34 @@
             <button type="submit">Update URL</button>
         </form>
         <div id="status" class="status" style="display: none;"></div>
+
+        <div class="stream-info">
+            <h2>Stream View</h2>
+            <p>Use this URL in OBS Browser Source:</p>
+            <div class="stream-url">
+                <span id="streamUrl"></span>
+                <button class="copy-button" onclick="copyStreamUrl()">Copy</button>
+            </div>
+            <a href="/stream" target="_blank" class="view-stream">Open Stream View in New Tab →</a>
+        </div>
     </div>
 
     <script>
+        // Set the stream URL
+        const streamUrl = `${window.location.origin}/stream`;
+        document.getElementById('streamUrl').textContent = streamUrl;
+
+        // Copy stream URL function
+        function copyStreamUrl() {
+            navigator.clipboard.writeText(streamUrl).then(() => {
+                const button = document.querySelector('.copy-button');
+                button.textContent = 'Copied!';
+                setTimeout(() => {
+                    button.textContent = 'Copy';
+                }, 2000);
+            });
+        }
+
         document.getElementById('urlForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const url = document.getElementById('urlInput').value;
@@ -107,6 +168,9 @@
                 statusDiv.className = 'status success';
                 statusDiv.style.display = 'block';
                 
+                // After successful update, check standings
+                checkStandings();
+                
                 // Hide status after 3 seconds
                 setTimeout(() => {
                     statusDiv.style.display = 'none';
@@ -118,6 +182,26 @@
                 statusDiv.style.display = 'block';
             }
         });
+
+        // Function to check standings
+        async function checkStandings() {
+            try {
+                const response = await fetch('/standings');
+                const data = await response.json();
+                
+                const statusDiv = document.getElementById('status');
+                if (data.standings) {
+                    statusDiv.textContent = `Successfully fetched ${data.standings.length} standings entries`;
+                    statusDiv.className = 'status success';
+                } else if (data.error) {
+                    statusDiv.textContent = `Error: ${data.error}`;
+                    statusDiv.className = 'status error';
+                }
+                statusDiv.style.display = 'block';
+            } catch (error) {
+                console.error('Error checking standings:', error);
+            }
+        }
     </script>
 </body>
-</html> 
+</html>
