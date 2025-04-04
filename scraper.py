@@ -56,6 +56,10 @@ async def read_stream(request: Request):
 async def read_bluepitch(request: Request):
     return templates.TemplateResponse("bluepitch.html", {"request": request})
 
+@app.get("/runaways")
+async def read_runaways(request: Request):
+    return templates.TemplateResponse("runaways.html", {"request": request})
+
 class RowRange(BaseModel):
     start: int
     end: int
