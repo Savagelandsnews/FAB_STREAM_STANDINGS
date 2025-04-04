@@ -42,8 +42,6 @@
             width: 788px;
             height: 74px;
             left: 966px;
-            filter: drop-shadow(0px 6.20061px 31.003px rgba(0, 0, 0, 0.8));
-            border-radius: 10px;
         }
 
         /* Frame positions */
@@ -71,7 +69,6 @@
             -webkit-text-fill-color: transparent;
             background-clip: text;
             text-fill-color: transparent;
-            z-index: 2;
         }
 
         .player-score {
@@ -87,18 +84,6 @@
             line-height: 120%;
             text-align: right;
             color: #000000;
-            z-index: 2;
-        }
-
-        .gold-bg {
-            position: absolute;
-            width: 788px;
-            height: 74px;
-            right: 0;
-            top: 0;
-            background: linear-gradient(180deg, #CBA655 0%, #F0EBB6 24.93%, #DBB45F 57.57%, #B08F49 118.71%);
-            border-radius: 10px;
-            z-index: 1;
         }
     </style>
 </head>
@@ -123,7 +108,6 @@
         function createPlayerEntry(player, record) {
             return `
                 <div class="frame">
-                    <div class="gold-bg"></div>
                     <div class="player-name">${player}</div>
                     <div class="player-score">${record}</div>
                 </div>
