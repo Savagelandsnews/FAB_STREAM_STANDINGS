@@ -151,7 +151,16 @@
             }
         }
 
-        function createPlayerEntry(player, flag, score, index) {
+        function createPlayerEntry(player, flag, wins, index) {
+            // Convert wins to number to ensure proper calculation
+            const winCount = parseInt(wins);
+            // Get current round from the roundNumber span
+            const currentRound = parseInt(document.getElementById('roundNumber').textContent);
+            // Calculate losses (current round minus wins)
+            const lossCount = currentRound - winCount;
+            // Format the record as "W-L"
+            const record = `${winCount}-${lossCount}`;
+
             return `
                 <div class="frame">
                     <div class="player-name">${player}</div>
@@ -159,7 +168,7 @@
                          src="https://flagcdn.com/w80/${flag.toLowerCase()}.png"
                          onerror="this.src='https://flagsapi.com/${flag}/flat/64.png'"
                          alt="${flag} flag">` : ''}
-                    <div class="player-score">${score}</div>
+                    <div class="player-score">${record}</div>
                 </div>
             `;
         }
@@ -230,6 +239,8 @@
                 if (data.round) {
                     const container = document.getElementById('round-title-container');
                     container.innerHTML = `<div class="round-title">STANDINGS ROUND <span id="roundNumber">${data.round}</span></div>`;
+                    // Update standings to reflect new record with new round number
+                    await updateStandings();
                 }
             } catch (error) {
                 console.error('Error fetching round number:', error);
