@@ -226,7 +226,9 @@
                 const response = await fetch('/get-round');
                 const data = await response.json();
                 if (data.round) {
-                    document.getElementById('roundNumber').textContent = data.round;
+                    const roundElement = document.getElementById('roundNumber');
+                    roundElement.textContent = ''; // Clear existing content
+                    roundElement.textContent = data.round; // Set new content
                 }
             } catch (error) {
                 console.error('Error fetching round number:', error);
