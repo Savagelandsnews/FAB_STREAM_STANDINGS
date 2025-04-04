@@ -107,7 +107,6 @@ async def get_standings(source: str = None):
         
         standings = []
         dropped_players = []
-        is_dropped = False
         
         rows = table.find_all('tr')[1:]  # Skip header row
         for row in rows:
@@ -117,32 +116,23 @@ async def get_standings(source: str = None):
                 player_name = cols[1].text.strip()
                 wins = cols[2].text.strip()
                 
-                if rank == 'Dropped':
-                    logger.debug("Found Dropped section marker")
-                    is_dropped = True
+                # Skip empty rows
+                if not player_name or not wins:
                     continue
                 
-                # Skip empty rows or header-like rows
-                if not player_name or not wins or wins.lower() == 'wins':
-                    continue
-                    
                 player_data = {
                     'rank': rank,
                     'player': player_name,
-                    'wins': wins
+                    'wins': wins,
+                    'isDropped': rank == 'Dropped'
                 }
                 
-                if is_dropped:
-                    logger.debug(f"Adding dropped player: {player_name} with {wins} wins")
+                if rank == 'Dropped':
                     dropped_players.append(player_data)
                 else:
                     standings.append(player_data)
         
         logger.info(f"Found {len(standings)} active players and {len(dropped_players)} dropped players")
-        
-        # Log some sample data to verify content
-        if dropped_players:
-            logger.debug(f"Sample dropped players: {[p['player'] for p in dropped_players[:5]]}")
         
         # Only apply row range filter if not from bluepitch
         if source != 'bluepitch':

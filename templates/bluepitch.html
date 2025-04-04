@@ -147,29 +147,17 @@
                     // Create a map to store player status and data
                     const playerStatusMap = new Map();
 
-                    // First check active players
-                    data.standings.forEach(entry => {
+                    // Process all players (both active and dropped)
+                    const allPlayers = [...data.standings, ...(data.droppedPlayers || [])];
+                    allPlayers.forEach(entry => {
                         const matchedName = findPlayerMatch(entry.player, PLAYERS_MAPPING);
                         if (matchedName) {
                             playerStatusMap.set(matchedName, {
-                                isDropped: false,
+                                isDropped: entry.isDropped || false,
                                 wins: parseInt(entry.wins)
                             });
                         }
                     });
-
-                    // Then check dropped players (will override if player is found in dropped list)
-                    if (data.droppedPlayers) {
-                        data.droppedPlayers.forEach(entry => {
-                            const matchedName = findPlayerMatch(entry.player, PLAYERS_MAPPING);
-                            if (matchedName) {
-                                playerStatusMap.set(matchedName, {
-                                    isDropped: true,
-                                    wins: parseInt(entry.wins)
-                                });
-                            }
-                        });
-                    }
 
                     // Generate entries for each player in our fixed order
                     Object.keys(PLAYERS_MAPPING).forEach(playerName => {
@@ -184,6 +172,7 @@
                                 const losses = wins >= currentRound ? 0 : currentRound - wins;
                                 record = `${wins}-${losses}`;
                             }
+                            console.log(`${playerName}: ${record} (dropped: ${playerData.isDropped})`);
                         }
 
                         html += createPlayerEntry(playerName, record);
