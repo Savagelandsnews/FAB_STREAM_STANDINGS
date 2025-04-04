@@ -111,16 +111,71 @@
         .view-stream:hover {
             text-decoration: underline;
         }
+
+        .row-controls {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #333;
+            border-radius: 4px;
+        }
+
+        .row-controls h2 {
+            color: #00aa00;
+            margin-top: 0;
+        }
+
+        .row-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .row-button {
+            padding: 10px 20px;
+            background-color: #4a4a4a;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            min-width: 100px;
+        }
+
+        .row-button.active {
+            background-color: #00aa00;
+        }
+
+        .row-button:hover {
+            background-color: #666;
+        }
+
+        .row-button.active:hover {
+            background-color: #008800;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>FAB Tournament Standings Management</h1>
+        
         <form id="urlForm">
             <input type="url" id="urlInput" placeholder="Enter standings URL (e.g., https://fabtcg.com/...)" required>
             <button type="submit">Update URL</button>
         </form>
         <div id="status" class="status" style="display: none;"></div>
+
+        <div class="row-controls">
+            <h2>Row Display Controls</h2>
+            <p>Select which rows to display on stream:</p>
+            <div class="row-buttons">
+                <button class="row-button active" data-start="0" data-end="10">Rows 1-10</button>
+                <button class="row-button" data-start="10" data-end="20">Rows 11-20</button>
+                <button class="row-button" data-start="20" data-end="30">Rows 21-30</button>
+                <button class="row-button" data-start="30" data-end="40">Rows 31-40</button>
+                <button class="row-button" data-start="40" data-end="50">Rows 41-50</button>
+            </div>
+        </div>
 
         <div class="stream-info">
             <h2>Stream View</h2>
@@ -202,6 +257,44 @@
                 console.error('Error checking standings:', error);
             }
         }
+
+        // Add row control functionality
+        document.querySelector('.row-buttons').addEventListener('click', async (e) => {
+            if (e.target.classList.contains('row-button')) {
+                // Update active button
+                document.querySelectorAll('.row-button').forEach(btn => btn.classList.remove('active'));
+                e.target.classList.add('active');
+
+                // Get the range
+                const start = parseInt(e.target.dataset.start);
+                const end = parseInt(e.target.dataset.end);
+
+                try {
+                    const response = await fetch('/update-range', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ start, end })
+                    });
+                    
+                    const data = await response.json();
+                    const statusDiv = document.getElementById('status');
+                    statusDiv.textContent = data.message || `Now showing rows ${start + 1}-${end}`;
+                    statusDiv.className = 'status success';
+                    statusDiv.style.display = 'block';
+                    
+                    setTimeout(() => {
+                        statusDiv.style.display = 'none';
+                    }, 3000);
+                } catch (error) {
+                    const statusDiv = document.getElementById('status');
+                    statusDiv.textContent = 'Error updating row range';
+                    statusDiv.className = 'status error';
+                    statusDiv.style.display = 'block';
+                }
+            }
+        });
     </script>
 </body>
 </html>
