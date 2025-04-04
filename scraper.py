@@ -113,20 +113,27 @@ async def get_standings(source: str = None):
             cols = row.find_all('td')
             if len(cols) >= 3:
                 rank = cols[0].text.strip()
+                player_name = cols[1].text.strip()
+                wins = cols[2].text.strip()
+                
                 if rank == 'Dropped':
+                    logger.debug("Found Dropped section")
                     is_dropped = True
                     continue
                     
                 player_data = {
                     'rank': rank,
-                    'player': cols[1].text.strip(),
-                    'wins': cols[2].text.strip()
+                    'player': player_name,
+                    'wins': wins
                 }
                 
                 if is_dropped:
+                    logger.debug(f"Adding dropped player: {player_name} with {wins} wins")
                     dropped_players.append(player_data)
                 else:
                     standings.append(player_data)
+        
+        logger.info(f"Found {len(standings)} active players and {len(dropped_players)} dropped players")
         
         # Only apply row range filter if not from bluepitch
         if source != 'bluepitch':
@@ -138,7 +145,7 @@ async def get_standings(source: str = None):
         return JSONResponse(content={
             "standings": standings,
             "droppedPlayers": dropped_players,
-            "total": len(standings),
+            "total": len(standings) + len(dropped_players),
             "showing": "all" if source == 'bluepitch' else f"{row_range['start'] + 1}-{row_range['end']}"
         })
         
