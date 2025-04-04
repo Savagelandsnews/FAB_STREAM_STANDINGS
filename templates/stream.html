@@ -101,9 +101,29 @@
             font-size: 12px;
             z-index: 1000;
         }
+
+        .round-title {
+            position: absolute;
+            width: 583px;
+            height: 115px;
+            left: 671px;
+            top: 19px;
+            font-family: 'Bebas Neue';
+            font-style: normal;
+            font-weight: 400;
+            font-size: 96px;
+            line-height: 120%;
+            text-align: center;
+            background: linear-gradient(180deg, #CBA655 0%, #F0EBB6 24.93%, #DBB45F 57.57%, #B08F49 118.71%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-fill-color: transparent;
+        }
     </style>
 </head>
 <body>
+    <div class="round-title">STANDINGS ROUND <span id="roundNumber">1</span></div>
     <div id="standings-container">
         <!-- Standings will be dynamically inserted here -->
     </div>
@@ -199,6 +219,24 @@
         });
 
         resizeObserver.observe(document.body);
+
+        // Function to update round number
+        async function checkRound() {
+            try {
+                const response = await fetch('/get-round');
+                const data = await response.json();
+                if (data.round) {
+                    document.getElementById('roundNumber').textContent = data.round;
+                }
+            } catch (error) {
+                console.error('Error fetching round number:', error);
+            }
+        }
+
+        // Check round number every 30 seconds along with standings
+        setInterval(checkRound, 30000);
+        // Initial round check
+        checkRound();
     </script>
 </body>
 </html>
