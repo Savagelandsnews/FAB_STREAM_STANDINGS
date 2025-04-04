@@ -68,6 +68,10 @@ async def read_armory(request: Request):
 async def read_sigil(request: Request):
     return templates.TemplateResponse("sigil.html", {"request": request})
 
+@app.get("/vampires")
+async def read_vampires(request: Request):
+    return templates.TemplateResponse("vampires.html", {"request": request})
+
 class RowRange(BaseModel):
     start: int
     end: int
