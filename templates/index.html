@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FAB Tournament Standings - Management</title>
+    <title>SavageFeats Tournament Standings - Management</title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -186,6 +186,18 @@
         .round-button {
             background-color: #4a4a4a;
         }
+
+        .team-links a {
+            display: block;
+            margin-top: 10px;
+            color: #00aa00;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .team-links a:hover {
+            color: #008800;
+        }
     </style>
 </head>
 <body>
@@ -226,6 +238,15 @@
                 <button class="copy-button" onclick="copyStreamUrl()">Copy</button>
             </div>
             <a href="/stream" target="_blank" class="view-stream">Open Stream View in New Tab →</a>
+        </div>
+
+        <!-- New Links for Team Standings -->
+        <div class="team-links">
+            <a href="/armory" target="_blank" class="view-armory">Open Armory Standings →</a><br>
+            <a href="/runaways" target="_blank" class="view-runaways">Open Runaways Standings →</a><br>
+            <a href="/sigil" target="_blank" class="view-sigil">Open Sigil Standings →</a><br>
+            <a href="/vampires" target="_blank" class="view-vampires">Open Vampires Standings →</a><br>
+            <a href="/bluepitch" target="_blank" class="view-bluepitch">Open Bluepitch Standings →</a>
         </div>
     </div>
 
