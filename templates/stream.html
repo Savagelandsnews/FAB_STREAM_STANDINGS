@@ -97,7 +97,6 @@
         }
 
         async function updateStandings() {
-            const standingsContainer = document.getElementById('standings-container');
             showDebug('Fetching standings...');
             
             try {
@@ -116,6 +115,7 @@
                 }
                 
                 if (data.standings && data.standings.length > 0) {
+                    const standingsContainer = document.getElementById('standings-container');
                     standingsContainer.innerHTML = data.standings
                         .map(entry => createPlayerEntry(
                             entry.player,
