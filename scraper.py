@@ -113,17 +113,26 @@ async def get_standings(source: str = None):
             cols = row.find_all('td')
             if len(cols) >= 3:
                 rank = cols[0].text.strip()
-                player_name = cols[1].text.strip()
+                player_cell = cols[1]
                 wins = cols[2].text.strip()
                 
                 # Skip empty rows
-                if not player_name or not wins:
+                if not player_cell.text.strip() or not wins:
                     continue
+                
+                # Extract flag from player cell
+                flag = None
+                flag_element = player_cell.find(class_='flag')
+                if flag_element:
+                    flag_classes = [c for c in flag_element['class'] if c != 'flag']
+                    if flag_classes:
+                        flag = flag_classes[0].upper()
                 
                 player_data = {
                     'rank': rank,
-                    'player': player_name,
+                    'player': player_cell.text.strip(),
                     'wins': wins,
+                    'flag': flag,
                     'isDropped': rank == 'Dropped'
                 }
                 
