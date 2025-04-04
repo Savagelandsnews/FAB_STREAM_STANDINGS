@@ -104,9 +104,9 @@
 
         .round-title {
             position: absolute;
-            width: 583px;
+            width: 700px;
             height: 115px;
-            left: 671px;
+            left: 610px;
             top: 19px;
             font-family: 'Bebas Neue';
             font-style: normal;
@@ -222,14 +222,13 @@
 
         resizeObserver.observe(document.body);
 
-        // Updated function to update round number
+        // Function to update round number
         async function checkRound() {
             try {
                 const response = await fetch('/get-round');
                 const data = await response.json();
                 if (data.round) {
                     const container = document.getElementById('round-title-container');
-                    // Replace the entire content
                     container.innerHTML = `<div class="round-title">STANDINGS ROUND <span id="roundNumber">${data.round}</span></div>`;
                 }
             } catch (error) {
