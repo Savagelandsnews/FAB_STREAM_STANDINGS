@@ -105,6 +105,10 @@
             "AR BUN"
         ];
 
+        function normalizePlayerName(name) {
+            return name.trim().toUpperCase().replace(/\s+/g, ' ');
+        }
+
         function createPlayerEntry(player, record) {
             return `
                 <div class="frame">
@@ -129,18 +133,29 @@
                     const container = document.getElementById('standings-container');
                     let html = '';
 
+                    // Debug log the standings data
+                    console.log("All standings:", data.standings.map(s => s.player));
+
                     // For each player in our fixed list
                     PLAYERS.forEach(playerName => {
-                        // Find the player in the standings
-                        const playerData = data.standings.find(entry => 
-                            entry.player.toUpperCase() === playerName
-                        );
+                        // Find the player in the standings with more flexible matching
+                        const playerData = data.standings.find(entry => {
+                            const normalizedEntry = normalizePlayerName(entry.player);
+                            const normalizedPlayer = normalizePlayerName(playerName);
+                            const isMatch = normalizedEntry.includes(normalizedPlayer) || 
+                                          normalizedPlayer.includes(normalizedEntry);
+                            console.log(`Comparing: "${normalizedEntry}" with "${normalizedPlayer}" = ${isMatch}`);
+                            return isMatch;
+                        });
 
                         let record = '0-0';
                         if (playerData) {
                             const wins = parseInt(playerData.wins);
                             const losses = wins >= currentRound ? 0 : currentRound - wins;
                             record = `${wins}-${losses}`;
+                            console.log(`Found match for ${playerName}: ${record}`);
+                        } else {
+                            console.log(`No match found for ${playerName}`);
                         }
 
                         html += createPlayerEntry(playerName, record);
