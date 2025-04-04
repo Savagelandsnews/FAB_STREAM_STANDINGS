@@ -103,17 +103,17 @@
     <script>
         // Define the fixed list of players with their position types and scraped names
         const PLAYERS = [
-            { type: "main", position: 1, name: "ROB CATTON", scrapedNames: ["Rob Catton"] },
-            { type: "main", position: 2, name: "FLORIN-CRISTIAN LOGHIN", scrapedNames: ["Florin-Cristian Loghin"], className: "florin-cristian" },
-            { type: "main", position: 3, name: "MATEUSZ SASS", scrapedNames: ["Mateusz Sass"] },
-            { type: "main", position: 4, name: "FILIP MIKOŁAJCZYK", scrapedNames: ["Filip Mikołajczyk"] },
-            { type: "main", position: 5, name: "YASSINE ECHAFAI", scrapedNames: ["Yassine Echafai"] },
-            { type: "main", position: 6, name: "GUILLEM LAS HERAS", scrapedNames: ["Guillem Las Heras"] },
-            { type: "main", position: 7, name: "DAVID J. IGLESIAS", scrapedNames: ["David J. Iglesias"] },
-            { type: "main", position: 8, name: "ILIAS KARAMANIS", scrapedNames: ["Ilias Karamanis"] },
-            { type: "main", position: 9, name: "FELIX KIRISCH", scrapedNames: ["Felix Kirisch"] },
-            { type: "bottom", position: 1, name: "MAXIMILIAN SCHMIDT", scrapedNames: ["Maximilian Schmidt"] },
-            { type: "bottom", position: 2, name: "LAURIN NIEHUES", scrapedNames: ["Laurin Niehues"] }
+            { type: "main", position: 1, name: "MATEUSZ SASS", scrapedNames: ["Mateusz Sass"] },
+            { type: "main", position: 2, name: "FILIP MIKOŁAJCZYK", scrapedNames: ["Filip Mikołajczyk"] },
+            { type: "main", position: 3, name: "YASSINE ECHAFAI", scrapedNames: ["Yassine Echafai"] },
+            { type: "main", position: 4, name: "GUILLEM LAS HERAS", scrapedNames: ["Guillem Las Heras"] },
+            { type: "main", position: 5, name: "DAVID J. IGLESIAS", scrapedNames: ["David J. Iglesias"] },
+            { type: "main", position: 6, name: "ILIAS KARAMANIS", scrapedNames: ["Ilias Karamanis"] },
+            { type: "main", position: 7, name: "FELIX KIRISCH", scrapedNames: ["Felix Kirisch"] },
+            { type: "main", position: 8, name: "MAXIMILIAN SCHMIDT", scrapedNames: ["Maximilian Schmidt"] },
+            { type: "main", position: 9, name: "LAURIN NIEHUES", scrapedNames: ["Laurin Niehues"] },
+            { type: "bottom", position: 1, name: "ROB CATTON", scrapedNames: ["Rob Catton"] },
+            { type: "bottom", position: 2, name: "FLORIN-CRISTIAN LOGHIN", scrapedNames: ["Florin-Cristian Loghin"], className: "florin-cristian" }
         ];
 
         function normalizePlayerName(name) {
@@ -190,8 +190,6 @@
 
                     // Special handling for known player data
                     // These are values we've seen in the scraped data
-                    playerStatusMap.set("ROB CATTON", { isDropped: false, wins: 7 });
-                    playerStatusMap.set("FLORIN-CRISTIAN LOGHIN", { isDropped: false, wins: 6 });
                     playerStatusMap.set("MATEUSZ SASS", { isDropped: false, wins: 6 });
                     playerStatusMap.set("FILIP MIKOŁAJCZYK", { isDropped: false, wins: 5 });
                     playerStatusMap.set("YASSINE ECHAFAI", { isDropped: false, wins: 6 });
@@ -201,6 +199,8 @@
                     playerStatusMap.set("FELIX KIRISCH", { isDropped: false, wins: 5 });
                     playerStatusMap.set("MAXIMILIAN SCHMIDT", { isDropped: false, wins: 5 });
                     playerStatusMap.set("LAURIN NIEHUES", { isDropped: false, wins: 4 });
+                    playerStatusMap.set("ROB CATTON", { isDropped: false, wins: 7 });
+                    playerStatusMap.set("FLORIN-CRISTIAN LOGHIN", { isDropped: false, wins: 6 });
                     
                     // Process all players from scraped data (active and dropped)
                     const allPlayers = [...data.standings, ...(data.droppedPlayers || [])];
