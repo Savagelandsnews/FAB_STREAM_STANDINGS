@@ -73,6 +73,18 @@
             text-fill-color: transparent;
         }
 
+        /* Special styles for specific players */
+        .player-name.pierre-nicolas {
+            width: 424px;
+        }
+        
+        .player-name.filipe {
+            width: 387px;
+            height: 62px;
+            font-size: 52px;
+            line-height: 120%;
+        }
+
         /* Player score styling */
         .player-score {
             position: absolute;
@@ -103,12 +115,12 @@
             { type: "main", position: 3, name: "SHAHMIR SAMEE", scrapedNames: ["Shahmir Samee"] },
             { type: "main", position: 4, name: "JASON ROLFE", scrapedNames: ["Jason Rolfe"] },
             { type: "main", position: 5, name: "SAMUEL BRABEN", scrapedNames: ["Samuel Braben"] },
-            { type: "main", position: 6, name: "PIERRE-NICOLAS PERRIN", scrapedNames: ["Pierre-Nicolas Perrin"] },
+            { type: "main", position: 6, name: "PIERRE-NICOLAS PERRIN", scrapedNames: ["Pierre-Nicolas Perrin"], className: "pierre-nicolas" },
             { type: "main", position: 7, name: "TOM BATTAGLIA", scrapedNames: ["Tom Battaglia"] },
             { type: "main", position: 8, name: "BILLY PISTEL", scrapedNames: ["Billy Pistel"] },
             { type: "main", position: 9, name: "ANTHONY VERO", scrapedNames: ["Anthony Vero"] },
             { type: "bottom", position: 1, name: "MICHAEL METALLO", scrapedNames: ["Michael Metallo"] },
-            { type: "bottom", position: 2, name: "FILIPE LIMA CARDOSO", scrapedNames: ["Filipe Lima Cardoso"] }
+            { type: "bottom", position: 2, name: "FILIPE LIMA CARDOSO", scrapedNames: ["Filipe Lima Cardoso"], className: "filipe" }
         ];
 
         function normalizePlayerName(name) {
@@ -149,10 +161,14 @@
             const className = player.type === "main" ? 
                 `main-player` : 
                 `bottom-player-${player.position}`;
+            
+            const nameClass = player.className ? 
+                `player-name ${player.className}` : 
+                'player-name';
                 
             return `
                 <div class="${className}">
-                    <div class="player-name">${player.name}</div>
+                    <div class="${nameClass}">${player.name}</div>
                     <div class="player-score">${record}</div>
                 </div>
             `;
@@ -190,6 +206,8 @@
                     playerStatusMap.set("TOM BATTAGLIA", { isDropped: false, wins: 4 });
                     playerStatusMap.set("BILLY PISTEL", { isDropped: false, wins: 5 });
                     playerStatusMap.set("ANTHONY VERO", { isDropped: false, wins: 5 });
+                    playerStatusMap.set("MICHAEL METALLO", { isDropped: false, wins: 5 });
+                    playerStatusMap.set("FILIPE LIMA CARDOSO", { isDropped: false, wins: 4 });
                     
                     // Process all players from scraped data (active and dropped)
                     const allPlayers = [...data.standings, ...(data.droppedPlayers || [])];
