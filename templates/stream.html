@@ -156,8 +156,8 @@
             const winCount = parseInt(wins);
             // Get current round from the roundNumber span
             const currentRound = parseInt(document.getElementById('roundNumber').textContent);
-            // Calculate losses (current round minus wins)
-            const lossCount = currentRound - winCount;
+            // Calculate losses (if wins equal current round, losses are 0)
+            const lossCount = winCount >= currentRound ? 0 : currentRound - winCount;
             // Format the record as "W-L"
             const record = `${winCount}-${lossCount}`;
 
