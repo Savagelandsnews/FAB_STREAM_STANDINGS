@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FAB Tournament Blue Pitch - Stream View</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            width: 1920px;
+            height: 1080px;
+            background-image: url('/static/BluePitch.png');
+            background-size: 1920px 1080px;
+            background-position: top left;
+            background-repeat: no-repeat;
+            overflow: hidden;
+        }
+
+        .title {
+            position: absolute;
+            width: 498px;
+            height: 115px;
+            left: 711px;
+            top: 19px;
+            font-family: 'Bebas Neue';
+            font-style: normal;
+            font-weight: 400;
+            font-size: 96px;
+            line-height: 120%;
+            text-align: center;
+            background: linear-gradient(180deg, #CBA655 0%, #F0EBB6 24.93%, #DBB45F 57.57%, #B08F49 118.71%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-fill-color: transparent;
+        }
+
+        .frame {
+            position: absolute;
+            width: 788px;
+            height: 74px;
+            left: 966px;
+            filter: drop-shadow(0px 6.20061px 31.003px rgba(0, 0, 0, 0.8));
+            border-radius: 10px;
+        }
+
+        /* Frame positions */
+        .frame:nth-child(1) { top: 222px; }
+        .frame:nth-child(2) { top: 311px; }
+        .frame:nth-child(3) { top: 400px; }
+        .frame:nth-child(4) { top: 489px; }
+        .frame:nth-child(5) { top: 578px; }
+        .frame:nth-child(6) { top: 667px; }
+        .frame:nth-child(7) { top: 756px; }
+
+        .player-name {
+            position: absolute;
+            width: 387px;
+            height: 67px;
+            left: 144px;
+            top: 5px;
+            font-family: 'Bebas Neue';
+            font-style: normal;
+            font-weight: 400;
+            font-size: 56px;
+            line-height: 120%;
+            background: linear-gradient(180deg, #CBA655 0%, #F0EBB6 24.93%, #DBB45F 57.57%, #B08F49 118.71%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-fill-color: transparent;
+        }
+
+        .player-score {
+            position: absolute;
+            width: 143px;
+            height: 67px;
+            left: 625px;
+            top: 5px;
+            font-family: 'Bebas Neue';
+            font-style: normal;
+            font-weight: 400;
+            font-size: 56px;
+            line-height: 120%;
+            text-align: right;
+            color: #000000;
+        }
+
+        .flag {
+            position: absolute;
+            width: 64px;
+            height: 64px;
+            left: 596px;
+            top: 5px;
+            filter: drop-shadow(0px 0px 4px rgba(0, 0, 0, 0.25));
+        }
+
+        .black-bg {
+            position: absolute;
+            width: 660px;
+            height: 74px;
+            left: 0px;
+            top: 0px;
+            background: #000000;
+            box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+        }
+
+        .gold-bg {
+            position: absolute;
+            width: 788px;
+            height: 74px;
+            left: 0px;
+            top: 0px;
+            background: linear-gradient(180deg, #CBA655 0%, #F0EBB6 24.93%, #DBB45F 57.57%, #B08F49 118.71%);
+            border-radius: 10px;
+            z-index: -1;
+        }
+    </style>
+</head>
+<body>
+    <div class="title">TEAMS TO WATCH</div>
+    <div id="standings-container">
+        <!-- Players will be dynamically inserted here -->
+    </div>
+
+    <script>
+        // Define the fixed list of players
+        const PLAYERS = [
+            "ALLEN LAU",
+            "SHING TSANG",
+            "NOVA CHAN",
+            "DAVID YAU",
+            "PUDDING TAM",
+            "WEN LAW",
+            "AR BUN"
+        ];
+
+        function createPlayerEntry(player, record) {
+            return `
+                <div class="frame">
+                    <div class="gold-bg"></div>
+                    <div class="black-bg"></div>
+                    <div class="player-name">${player}</div>
+                    <img class="flag" src="https://flagcdn.com/w80/hk.png" 
+                         onerror="this.src='https://flagsapi.com/HK/flat/64.png'"
+                         alt="Hong Kong flag">
+                    <div class="player-score">${record}</div>
+                </div>
+            `;
+        }
+
+        async function updateStandings() {
+            try {
+                // Fetch current round
+                const roundResponse = await fetch('/get-round');
+                const roundData = await roundResponse.json();
+                const currentRound = roundData.round;
+
+                // Fetch standings
+                const standingsResponse = await fetch('/standings');
+                const data = await standingsResponse.json();
+                
+                if (data.standings && data.standings.length > 0) {
+                    const container = document.getElementById('standings-container');
+                    let html = '';
+
+                    // For each player in our fixed list
+                    PLAYERS.forEach(playerName => {
+                        // Find the player in the standings
+                        const playerData = data.standings.find(entry => 
+                            entry.player.toUpperCase() === playerName
+                        );
+
+                        let record = '0-0';
+                        if (playerData) {
+                            const wins = parseInt(playerData.wins);
+                            const losses = wins >= currentRound ? 0 : currentRound - wins;
+                            record = `${wins}-${losses}`;
+                        }
+
+                        html += createPlayerEntry(playerName, record);
+                    });
+
+                    container.innerHTML = html;
+                }
+            } catch (error) {
+                console.error('Error updating standings:', error);
+            }
+        }
+
+        // Initial update
+        updateStandings();
+
+        // Update every 30 seconds
+        setInterval(updateStandings, 30000);
+    </script>
+</body>
+</html> 
