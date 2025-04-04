@@ -94,19 +94,29 @@
     </div>
 
     <script>
-        // Define the fixed list of players
-        const PLAYERS = [
-            "ALLEN LAU",
-            "SHING TSANG",
-            "NOVA CHAN",
-            "DAVID YAU",
-            "PUDDING TAM",
-            "WEN LAW",
-            "AR BUN"
-        ];
+        // Define the fixed list of players with possible variations
+        const PLAYERS_MAPPING = {
+            "ALLEN LAU": ["ALLEN LAU", "ALLEN", "LAU"],
+            "SHING TSANG": ["SHING TSANG", "SHING", "TSANG"],
+            "NOVA CHAN": ["NOVA CHAN", "NOVA"],
+            "DAVID YAU": ["DAVID YAU", "DAVID", "YAU"],
+            "PUDDING TAM": ["PUDDING TAM", "PUDDING"],
+            "WEN LAW": ["WEN LAW", "WEN"],
+            "AR BUN": ["AR BUN", "AR", "BUN"]
+        };
 
         function normalizePlayerName(name) {
             return name.trim().toUpperCase().replace(/\s+/g, ' ');
+        }
+
+        function findPlayerMatch(scrapedName, mappings) {
+            scrapedName = normalizePlayerName(scrapedName);
+            for (const [displayName, variations] of Object.entries(mappings)) {
+                if (variations.some(v => scrapedName.includes(normalizePlayerName(v)))) {
+                    return displayName;
+                }
+            }
+            return null;
         }
 
         function createPlayerEntry(player, record) {
@@ -133,29 +143,32 @@
                     const container = document.getElementById('standings-container');
                     let html = '';
 
-                    // Debug log the standings data
-                    console.log("All standings:", data.standings.map(s => s.player));
+                    // Debug log
+                    console.log("Current round:", currentRound);
+                    console.log("All standings:", data.standings);
 
-                    // For each player in our fixed list
-                    PLAYERS.forEach(playerName => {
-                        // Find the player in the standings with more flexible matching
-                        const playerData = data.standings.find(entry => {
-                            const normalizedEntry = normalizePlayerName(entry.player);
-                            const normalizedPlayer = normalizePlayerName(playerName);
-                            const isMatch = normalizedEntry.includes(normalizedPlayer) || 
-                                          normalizedPlayer.includes(normalizedEntry);
-                            console.log(`Comparing: "${normalizedEntry}" with "${normalizedPlayer}" = ${isMatch}`);
-                            return isMatch;
-                        });
+                    // Create a map of normalized names to standings data
+                    const standingsMap = new Map();
+                    data.standings.forEach(entry => {
+                        const matchedName = findPlayerMatch(entry.player, PLAYERS_MAPPING);
+                        if (matchedName) {
+                            standingsMap.set(matchedName, entry);
+                            console.log(`Matched ${entry.player} to ${matchedName}`);
+                        }
+                    });
 
+                    // Generate entries for each player in our fixed order
+                    Object.keys(PLAYERS_MAPPING).forEach(playerName => {
+                        const playerData = standingsMap.get(playerName);
                         let record = '0-0';
+                        
                         if (playerData) {
                             const wins = parseInt(playerData.wins);
                             const losses = wins >= currentRound ? 0 : currentRound - wins;
                             record = `${wins}-${losses}`;
-                            console.log(`Found match for ${playerName}: ${record}`);
+                            console.log(`${playerName}: ${playerData.wins} wins -> ${record}`);
                         } else {
-                            console.log(`No match found for ${playerName}`);
+                            console.log(`No data found for ${playerName}`);
                         }
 
                         html += createPlayerEntry(playerName, record);
