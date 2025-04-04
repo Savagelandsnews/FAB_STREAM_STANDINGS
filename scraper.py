@@ -3,6 +3,7 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 import aiohttp
 from bs4 import BeautifulSoup
 import logging
@@ -34,8 +35,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Store the current URL and cache
+# Add row range state
 current_url = ""
+row_range = {"start": 0, "end": 10}  # Default to first 10 rows
 cache = {}  # URL -> (data, timestamp)
 CACHE_DURATION = 30  # seconds
 
@@ -47,9 +49,23 @@ async def read_root(request: Request):
 async def read_stream(request: Request):
     return templates.TemplateResponse("stream.html", {"request": request})
 
+class RowRange(BaseModel):
+    start: int
+    end: int
+
+@app.post("/update-range")
+async def update_range(range_data: RowRange):
+    global row_range
+    logger.info(f"Updating row range to: {range_data.start}-{range_data.end}")
+    row_range = {"start": range_data.start, "end": range_data.end}
+    return JSONResponse(content={
+        "success": True,
+        "message": f"Now showing rows {range_data.start + 1}-{range_data.end}"
+    })
+
 @app.get("/standings")
 async def get_standings():
-    global current_url, cache
+    global current_url, cache, row_range
     
     if not current_url:
         logger.warning("No URL set for standings fetch")
@@ -77,10 +93,6 @@ async def get_standings():
         
         if not table:
             logger.error("No standings table found in the response")
-            # Log more HTML details
-            logger.debug(f"HTML structure: {soup.prettify()[:1000]}...")  # First 1000 chars of formatted HTML
-            logger.debug(f"All tables found: {len(soup.find_all('table'))}")
-            logger.debug(f"All table-like elements: {soup.find_all(['table', 'div', 'section'])[:5]}")
             return JSONResponse(
                 status_code=404,
                 content={"error": "No standings found"}
@@ -90,7 +102,6 @@ async def get_standings():
         for row in table.find_all('tr')[1:]:  # Skip header row
             cols = row.find_all('td')
             if len(cols) >= 3:
-                # Look for country/flag information
                 flag = None
                 player_cell = cols[1]
                 for element in player_cell.find_all(class_='flag'):
@@ -106,11 +117,15 @@ async def get_standings():
                     'flag': flag
                 })
         
-        logger.info(f"Successfully fetched {len(standings)} standings entries")
-        if standings:
-            logger.debug(f"First entry: {standings[0]}")
+        # Apply row range filter
+        filtered_standings = standings[row_range["start"]:row_range["end"]]
+        logger.info(f"Returning standings rows {row_range['start'] + 1}-{row_range['end']} of {len(standings)} total entries")
         
-        return JSONResponse(content={"standings": standings})
+        return JSONResponse(content={
+            "standings": filtered_standings,
+            "total": len(standings),
+            "showing": f"{row_range['start'] + 1}-{row_range['end']}"
+        })
         
     except Exception as e:
         logger.error(f"Error fetching standings: {str(e)}")
