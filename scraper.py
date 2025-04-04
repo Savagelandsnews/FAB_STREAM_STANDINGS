@@ -41,6 +41,9 @@ row_range = {"start": 0, "end": 10}  # Default to first 10 rows
 cache = {}  # URL -> (data, timestamp)
 CACHE_DURATION = 30  # seconds
 
+# Add to the global variables at the top
+current_round = 1
+
 @app.get("/")
 async def read_root(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
@@ -159,6 +162,21 @@ async def update_url(url: str = Form(...)):
         )
     
     return JSONResponse(content={"success": True, "message": "URL updated successfully"})
+
+@app.post("/update-round")
+async def update_round(round_data: dict):
+    global current_round
+    logger.info(f"Updating round number to: {round_data['round']}")
+    current_round = round_data['round']
+    return JSONResponse(content={
+        "success": True,
+        "message": f"Updated to Round {current_round}"
+    })
+
+@app.get("/get-round")
+async def get_round():
+    global current_round
+    return JSONResponse(content={"round": current_round})
 
 if __name__ == "__main__":
     import uvicorn

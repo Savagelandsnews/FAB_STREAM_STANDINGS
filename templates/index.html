@@ -153,6 +153,39 @@
         .row-button.active:hover {
             background-color: #008800;
         }
+
+        .round-controls {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #333;
+            border-radius: 4px;
+        }
+
+        .round-controls h2 {
+            color: #00aa00;
+            margin-top: 0;
+        }
+
+        .round-input-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .round-input {
+            padding: 10px;
+            border: 1px solid #4a4a4a;
+            border-radius: 4px;
+            background-color: #1a1a1a;
+            color: #fff;
+            font-size: 16px;
+            width: 80px;
+            text-align: center;
+        }
+
+        .round-button {
+            background-color: #4a4a4a;
+        }
     </style>
 </head>
 <body>
@@ -164,6 +197,14 @@
             <button type="submit">Update URL</button>
         </form>
         <div id="status" class="status" style="display: none;"></div>
+
+        <div class="round-controls">
+            <h2>Round Number</h2>
+            <div class="round-input-group">
+                <input type="number" id="roundNumber" min="1" value="1" class="round-input">
+                <button onclick="updateRound()" class="round-button">Update Round</button>
+            </div>
+        </div>
 
         <div class="row-controls">
             <h2>Row Display Controls</h2>
@@ -295,6 +336,34 @@
                 }
             }
         });
+
+        async function updateRound() {
+            const roundNumber = document.getElementById('roundNumber').value;
+            const statusDiv = document.getElementById('status');
+            
+            try {
+                const response = await fetch('/update-round', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ round: parseInt(roundNumber) })
+                });
+                
+                const data = await response.json();
+                statusDiv.textContent = data.message || `Updated to Round ${roundNumber}`;
+                statusDiv.className = 'status success';
+                statusDiv.style.display = 'block';
+                
+                setTimeout(() => {
+                    statusDiv.style.display = 'none';
+                }, 3000);
+            } catch (error) {
+                statusDiv.textContent = 'Error updating round number';
+                statusDiv.className = 'status error';
+                statusDiv.style.display = 'block';
+            }
+        }
     </script>
 </body>
 </html>
