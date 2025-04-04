@@ -11,46 +11,55 @@
             padding: 0;
             width: 100vw;
             height: 100vh;
-            background-image: url('../static/background.png');
+            background-image: url('/static/background.png');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
             overflow: hidden;
+            font-family: 'Bebas Neue', sans-serif;
         }
 
         .player-entry {
             display: flex;
             align-items: center;
-            justify-content: center;
-            gap: 20px;
-            height: 67px;
-            margin-bottom: 10px;
+            height: 60px;
+            margin-bottom: 8px;
+            background: linear-gradient(90deg, #000000 85%, #B08F49 100%);
+            position: relative;
+            padding-right: 80px;
         }
 
         .player-name {
-            font-family: 'Bebas Neue', sans-serif;
-            font-size: 56px;
+            font-size: 36px;
             font-weight: normal;
-            line-height: 120%;
-            letter-spacing: 0.1em;
             color: #FFFFFF;
-            width: 387px;
+            flex-grow: 1;
             text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding-left: 20px;
         }
 
         .flag {
-            width: 30px;
-            height: 20px;
+            width: 24px;
+            height: 16px;
             object-fit: contain;
+            margin-right: 20px;
         }
 
         .player-score {
-            font-family: 'Bebas Neue', sans-serif;
-            font-size: 56px;
+            font-size: 36px;
             font-weight: normal;
-            color: #B08F49;
-            width: 100px;
+            color: #000000;
+            width: 60px;
             text-align: center;
+            position: absolute;
+            right: 10px;
+            background: #B08F49;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         #standings-container {
@@ -58,7 +67,7 @@
             left: 50%;
             top: 50%;
             transform: translate(-50%, -50%);
-            width: 600px;
+            width: 800px;
         }
 
         #debug {
@@ -70,6 +79,14 @@
             padding: 5px;
             font-family: monospace;
             font-size: 12px;
+            z-index: 1000;
+        }
+
+        .rank {
+            position: absolute;
+            left: 20px;
+            color: #FFFFFF;
+            font-size: 36px;
         }
     </style>
 </head>
@@ -90,7 +107,8 @@
         function createPlayerEntry(player, flag, score, rank) {
             return `
                 <div class="player-entry">
-                    <div class="player-name">${rank}. ${player}</div>
+                    <span class="rank">${rank}.</span>
+                    <div class="player-name">${player}</div>
                     ${flag ? `<img class="flag" 
                          src="https://flagcdn.com/w40/${flag.toLowerCase()}.png"
                          onerror="this.src='https://flagsapi.com/${flag}/flat/24.png'"
@@ -120,6 +138,7 @@
                 
                 if (data.standings && data.standings.length > 0) {
                     const standingsContainer = document.getElementById('standings-container');
+                    // Take only the first 10 entries
                     const top10Standings = data.standings.slice(0, 10);
                     standingsContainer.innerHTML = top10Standings
                         .map(entry => createPlayerEntry(
