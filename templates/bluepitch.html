@@ -94,25 +94,26 @@
     </div>
 
     <script>
-        // Define the fixed list of players with possible variations
+        // Define the fixed list of players with their exact scraped names
         const PLAYERS_MAPPING = {
-            "ALLEN LAU": ["ALLEN LAU", "ALLEN", "LAU"],
-            "SHING TSANG": ["SHING TSANG", "SHING", "TSANG"],
-            "NOVA CHAN": ["NOVA CHAN", "NOVA"],
-            "DAVID YAU": ["DAVID YAU", "DAVID", "YAU"],
-            "PUDDING TAM": ["PUDDING TAM", "PUDDING"],
-            "WEN LAW": ["WEN LAW", "WEN"],
-            "AR BUN": ["AR BUN", "AR", "BUN"]
+            "ALLEN LAU": ["Allen Lau"],
+            "SHING TSANG": ["Shing Tsang"],
+            "NOVA CHAN": ["Nova Chan"],
+            "DAVID YAU": ["David Yau"],
+            "PUDDING TAM": ["Pudding Tam"],
+            "WEN LAW": ["Law Wen"],
+            "AR BUN": ["Bun Ar"]
         };
 
         function normalizePlayerName(name) {
-            return name.trim().toUpperCase().replace(/\s+/g, ' ');
+            return name.trim();  // Just trim whitespace, keep original case
         }
 
         function findPlayerMatch(scrapedName, mappings) {
             scrapedName = normalizePlayerName(scrapedName);
             for (const [displayName, variations] of Object.entries(mappings)) {
-                if (variations.some(v => scrapedName.includes(normalizePlayerName(v)))) {
+                if (variations.includes(scrapedName)) {
+                    console.log(`Matched ${scrapedName} to ${displayName}`);
                     return displayName;
                 }
             }
@@ -143,19 +144,24 @@
                     const container = document.getElementById('standings-container');
                     let html = '';
 
-                    // Debug log
-                    console.log("Current round:", currentRound);
-                    console.log("All standings:", data.standings);
-
                     // Create a map of normalized names to standings data
                     const standingsMap = new Map();
                     data.standings.forEach(entry => {
                         const matchedName = findPlayerMatch(entry.player, PLAYERS_MAPPING);
                         if (matchedName) {
                             standingsMap.set(matchedName, entry);
-                            console.log(`Matched ${entry.player} to ${matchedName}`);
                         }
                     });
+
+                    // Also check dropped players for matches
+                    if (data.droppedPlayers) {
+                        data.droppedPlayers.forEach(entry => {
+                            const matchedName = findPlayerMatch(entry.player, PLAYERS_MAPPING);
+                            if (matchedName) {
+                                standingsMap.set(matchedName, entry);
+                            }
+                        });
+                    }
 
                     // Generate entries for each player in our fixed order
                     Object.keys(PLAYERS_MAPPING).forEach(playerName => {
@@ -166,9 +172,7 @@
                             const wins = parseInt(playerData.wins);
                             const losses = wins >= currentRound ? 0 : currentRound - wins;
                             record = `${wins}-${losses}`;
-                            console.log(`${playerName}: ${playerData.wins} wins -> ${record}`);
-                        } else {
-                            console.log(`No data found for ${playerName}`);
+                            console.log(`Setting record for ${playerName}: ${record}`);
                         }
 
                         html += createPlayerEntry(playerName, record);
