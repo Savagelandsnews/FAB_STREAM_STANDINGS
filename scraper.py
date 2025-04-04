@@ -71,7 +71,7 @@ async def update_range(range_data: RowRange):
     })
 
 @app.get("/standings")
-async def get_standings():
+async def get_standings(source: str = None):
     global current_url, cache, row_range
     
     if not current_url:
@@ -106,32 +106,40 @@ async def get_standings():
             )
         
         standings = []
+        dropped_players = []
+        is_dropped = False
+        
         for row in table.find_all('tr')[1:]:  # Skip header row
             cols = row.find_all('td')
             if len(cols) >= 3:
-                flag = None
-                player_cell = cols[1]
-                for element in player_cell.find_all(class_='flag'):
-                    flag_classes = [c for c in element['class'] if c != 'flag']
-                    if flag_classes:
-                        flag = flag_classes[0].upper()
-                        break
-                
-                standings.append({
-                    'rank': cols[0].text.strip(),
+                rank = cols[0].text.strip()
+                if rank == 'Dropped':
+                    is_dropped = True
+                    continue
+                    
+                player_data = {
+                    'rank': rank,
                     'player': cols[1].text.strip(),
-                    'wins': cols[2].text.strip(),
-                    'flag': flag
-                })
+                    'wins': cols[2].text.strip()
+                }
+                
+                if is_dropped:
+                    dropped_players.append(player_data)
+                else:
+                    standings.append(player_data)
         
-        # Apply row range filter
-        filtered_standings = standings[row_range["start"]:row_range["end"]]
-        logger.info(f"Returning standings rows {row_range['start'] + 1}-{row_range['end']} of {len(standings)} total entries")
+        # Only apply row range filter if not from bluepitch
+        if source != 'bluepitch':
+            standings = standings[row_range["start"]:row_range["end"]]
+            logger.info(f"Returning standings rows {row_range['start'] + 1}-{row_range['end']} of {len(standings)} total entries")
+        else:
+            logger.info(f"Returning all standings for bluepitch view")
         
         return JSONResponse(content={
-            "standings": filtered_standings,
+            "standings": standings,
+            "droppedPlayers": dropped_players,
             "total": len(standings),
-            "showing": f"{row_range['start'] + 1}-{row_range['end']}"
+            "showing": "all" if source == 'bluepitch' else f"{row_range['start'] + 1}-{row_range['end']}"
         })
         
     except Exception as e:

@@ -136,11 +136,11 @@
                 const roundData = await roundResponse.json();
                 const currentRound = roundData.round;
 
-                // Fetch standings
-                const standingsResponse = await fetch('/standings');
+                // Fetch standings with source parameter
+                const standingsResponse = await fetch('/standings?source=bluepitch');
                 const data = await standingsResponse.json();
                 
-                if (data.standings && data.standings.length > 0) {
+                if (data.standings) {
                     const container = document.getElementById('standings-container');
                     let html = '';
 
@@ -149,6 +149,7 @@
                     data.standings.forEach(entry => {
                         const matchedName = findPlayerMatch(entry.player, PLAYERS_MAPPING);
                         if (matchedName) {
+                            console.log(`Found match for ${entry.player} -> ${matchedName}`);
                             standingsMap.set(matchedName, entry);
                         }
                     });
@@ -158,6 +159,7 @@
                         data.droppedPlayers.forEach(entry => {
                             const matchedName = findPlayerMatch(entry.player, PLAYERS_MAPPING);
                             if (matchedName) {
+                                console.log(`Found dropped player match for ${entry.player} -> ${matchedName}`);
                                 standingsMap.set(matchedName, entry);
                             }
                         });
@@ -172,7 +174,9 @@
                             const wins = parseInt(playerData.wins);
                             const losses = wins >= currentRound ? 0 : currentRound - wins;
                             record = `${wins}-${losses}`;
-                            console.log(`Setting record for ${playerName}: ${record}`);
+                            console.log(`Setting record for ${playerName}: ${record} (wins: ${wins}, round: ${currentRound})`);
+                        } else {
+                            console.log(`No data found for ${playerName}`);
                         }
 
                         html += createPlayerEntry(playerName, record);
