@@ -1,13 +1,77 @@
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-env/
-venv/
-.env
-.vscode/
-.idea/
-*.log
-.DS_Store
-Thumbs.db
+<!-- Add to the style section -->
+<style>
+    .loading {
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        background: rgba(0, 0, 0, 0.7);
+        color: #00aa00;
+        padding: 5px 10px;
+        border-radius: 4px;
+        font-family: Arial, sans-serif;
+        font-size: 12px;
+        display: none;
+    }
+
+    .error {
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        background: rgba(255, 0, 0, 0.7);
+        color: white;
+        padding: 5px 10px;
+        border-radius: 4px;
+        font-family: Arial, sans-serif;
+        font-size: 12px;
+        display: none;
+    }
+</style>
+
+<!-- Add before the script tag -->
+<div id="loading" class="loading">Updating standings...</div>
+<div id="error" class="error"></div>
+
+<!-- Update the updateStandings function -->
+<script>
+    async function updateStandings() {
+        const standingsContainer = document.getElementById('standings-container');
+        const loadingDiv = document.getElementById('loading');
+        const errorDiv = document.getElementById('error');
+        
+        loadingDiv.style.display = 'block';
+        errorDiv.style.display = 'none';
+        
+        try {
+            const response = await fetch('/standings');
+            const data = await response.json();
+            
+            if (data.error) {
+                errorDiv.textContent = data.error;
+                errorDiv.style.display = 'block';
+                return;
+            }
+            
+            if (data.standings) {
+                standingsContainer.innerHTML = data.standings
+                    .map(entry => createPlayerEntry(
+                        entry.player,
+                        entry.flag || 'US',
+                        entry.wins
+                    ))
+                    .join('');
+            }
+        } catch (error) {
+            console.error('Error updating standings:', error);
+            errorDiv.textContent = 'Error updating standings';
+            errorDiv.style.display = 'block';
+        } finally {
+            loadingDiv.style.display = 'none';
+        }
+    }
+
+    // Initial update
+    updateStandings();
+
+    // Update every 30 seconds
+    setInterval(updateStandings, 30000);
+</script>
