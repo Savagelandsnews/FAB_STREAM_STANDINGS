@@ -111,11 +111,9 @@
 
         function findPlayerMatch(scrapedName, mappings) {
             scrapedName = normalizePlayerName(scrapedName);
-            console.log(`Looking for match for scraped name: "${scrapedName}"`);
-            
             for (const [displayName, variations] of Object.entries(mappings)) {
                 if (variations.includes(scrapedName)) {
-                    console.log(`✓ Matched "${scrapedName}" to "${displayName}"`);
+                    console.log(`Found match: ${scrapedName} -> ${displayName}`);
                     return displayName;
                 }
             }
@@ -137,54 +135,55 @@
                 const roundResponse = await fetch('/get-round');
                 const roundData = await roundResponse.json();
                 const currentRound = roundData.round;
-                console.log(`Current round: ${currentRound}`);
 
                 // Fetch standings with source parameter
                 const standingsResponse = await fetch('/standings?source=bluepitch');
                 const data = await standingsResponse.json();
                 
-                console.log('Active players:', data.standings.map(s => s.player));
-                console.log('Dropped players:', data.droppedPlayers.map(s => s.player));
-                
-                if (data.standings) {
+                if (data.standings || data.droppedPlayers) {
                     const container = document.getElementById('standings-container');
                     let html = '';
 
-                    // Create a map of normalized names to standings data
-                    const standingsMap = new Map();
-                    
-                    // Process active players
+                    // Create a map to store player status and data
+                    const playerStatusMap = new Map();
+
+                    // First check active players
                     data.standings.forEach(entry => {
                         const matchedName = findPlayerMatch(entry.player, PLAYERS_MAPPING);
                         if (matchedName) {
-                            standingsMap.set(matchedName, entry);
+                            playerStatusMap.set(matchedName, {
+                                isDropped: false,
+                                wins: parseInt(entry.wins)
+                            });
                         }
                     });
 
-                    // Process dropped players
-                    if (data.droppedPlayers && data.droppedPlayers.length > 0) {
-                        console.log(`Processing ${data.droppedPlayers.length} dropped players`);
+                    // Then check dropped players (will override if player is found in dropped list)
+                    if (data.droppedPlayers) {
                         data.droppedPlayers.forEach(entry => {
                             const matchedName = findPlayerMatch(entry.player, PLAYERS_MAPPING);
                             if (matchedName) {
-                                console.log(`Found dropped player: ${entry.player} with ${entry.wins} wins`);
-                                standingsMap.set(matchedName, entry);
+                                playerStatusMap.set(matchedName, {
+                                    isDropped: true,
+                                    wins: parseInt(entry.wins)
+                                });
                             }
                         });
                     }
 
                     // Generate entries for each player in our fixed order
                     Object.keys(PLAYERS_MAPPING).forEach(playerName => {
-                        const playerData = standingsMap.get(playerName);
+                        const playerData = playerStatusMap.get(playerName);
                         let record = '0-0';
                         
                         if (playerData) {
-                            const wins = parseInt(playerData.wins);
-                            const losses = wins >= currentRound ? 0 : currentRound - wins;
-                            record = `${wins}-${losses}`;
-                            console.log(`${playerName}: ${record} (wins: ${wins}, round: ${currentRound})`);
-                        } else {
-                            console.log(`⚠ No data found for ${playerName}`);
+                            if (playerData.isDropped) {
+                                record = 'DROP';
+                            } else {
+                                const wins = playerData.wins;
+                                const losses = wins >= currentRound ? 0 : currentRound - wins;
+                                record = `${wins}-${losses}`;
+                            }
                         }
 
                         html += createPlayerEntry(playerName, record);
