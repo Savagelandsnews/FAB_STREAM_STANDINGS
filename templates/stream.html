@@ -11,7 +11,11 @@
             padding: 0;
             width: 100vw;
             height: 100vh;
-            background: transparent;
+            background-image: url('../static/background.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            overflow: hidden;
         }
 
         .player-entry {
@@ -83,10 +87,10 @@
             console.log(message);
         }
 
-        function createPlayerEntry(player, flag, score) {
+        function createPlayerEntry(player, flag, score, rank) {
             return `
                 <div class="player-entry">
-                    <div class="player-name">${player}</div>
+                    <div class="player-name">${rank}. ${player}</div>
                     ${flag ? `<img class="flag" 
                          src="https://flagcdn.com/w40/${flag.toLowerCase()}.png"
                          onerror="this.src='https://flagsapi.com/${flag}/flat/24.png'"
@@ -116,14 +120,16 @@
                 
                 if (data.standings && data.standings.length > 0) {
                     const standingsContainer = document.getElementById('standings-container');
-                    standingsContainer.innerHTML = data.standings
+                    const top10Standings = data.standings.slice(0, 10);
+                    standingsContainer.innerHTML = top10Standings
                         .map(entry => createPlayerEntry(
                             entry.player,
                             entry.flag || 'US',
-                            entry.wins
+                            entry.wins,
+                            entry.rank
                         ))
                         .join('');
-                    showDebug(`Updated standings: ${data.standings.length} entries`);
+                    showDebug(`Updated standings: showing top 10 of ${data.standings.length} entries`);
                 } else {
                     showDebug('No standings data received');
                 }
