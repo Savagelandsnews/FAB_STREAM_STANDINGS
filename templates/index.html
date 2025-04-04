@@ -426,6 +426,28 @@
                 statusDiv.style.display = 'block';
             }
         }
+
+        function displayNextRows() {
+            const startRow = parseInt(document.getElementById('startRow').value) || 1;
+            const endRow = parseInt(document.getElementById('endRow').value) || 10;
+            
+            fetch('/update-rows', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `start_row=${startRow}&end_row=${endRow}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Trigger Pusher event to update all views
+                pusher_client.trigger('standings-channel', 'row-update', {
+                    start_row: startRow,
+                    end_row: endRow
+                });
+            })
+            .catch(error => console.error('Error:', error));
+        }
     </script>
 </body>
 </html>
