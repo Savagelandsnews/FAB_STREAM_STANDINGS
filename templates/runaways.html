@@ -4,170 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FAB Tournament Standings - Runaways View</title>
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
     <style>
         body {
             margin: 0;
             padding: 0;
             width: 1920px;
             height: 1080px;
+            background-image: url('/static/Runaways.png');
+            background-size: 1920px 1080px;
+            background-position: top left;
+            background-repeat: no-repeat;
             overflow: hidden;
-            position: relative;
-        }
-
-        /* Main background gradient */
-        .background-gradient {
-            position: absolute;
-            width: 1920px;
-            height: 929px;
-            left: 0px;
-            top: 211px;
-            background: linear-gradient(180deg, rgba(0, 0, 0, 0) 12.65%, #000000 126%);
-            z-index: 1;
-        }
-
-        /* Header group */
-        .header-group {
-            position: absolute;
-            width: 1920px;
-            height: 179px;
-            left: 0px;
-            top: -28px;
-            filter: drop-shadow(0px 18px 15.4px rgba(0, 0, 0, 0.75));
-            z-index: 2;
-        }
-
-        .header-background {
-            position: absolute;
-            width: 1920px;
-            height: 170.7px;
-            left: 0px;
-            top: -28px;
-            background: #000000;
-        }
-
-        .gold-line {
-            position: absolute;
-            width: 1920px;
-            height: 9.48px;
-            left: 0px;
-            top: 141.52px;
-            background: linear-gradient(90deg, #FCC15C 0%, #F5BC57 47.5%, #CFA23D 100%);
-        }
-
-        .title {
-            position: absolute;
-            width: 498px;
-            height: 115px;
-            left: 711px;
-            top: 19px;
-            font-family: 'Bebas Neue';
-            font-style: normal;
-            font-weight: 400;
-            font-size: 96px;
-            line-height: 120%;
-            text-align: center;
-            background: linear-gradient(180deg, #CBA655 0%, #F0EBB6 24.93%, #DBB45F 57.57%, #B08F49 118.71%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            text-fill-color: transparent;
-        }
-
-        /* Logos */
-        .fab-logo {
-            position: absolute;
-            width: 211px;
-            height: 110.74px;
-            right: 20px;
-            top: 15px;
-            z-index: 3;
-        }
-
-        /* Team section */
-        .runaways-title {
-            position: absolute;
-            width: 615px;
-            height: 115px;
-            left: 252px;
-            top: 668px;
-            font-family: 'Bebas Neue';
-            font-style: normal;
-            font-weight: 400;
-            font-size: 96px;
-            line-height: 120%;
-            text-align: center;
-            background: linear-gradient(180deg, #CBA655 0%, #F0EBB6 24.93%, #DBB45F 57.57%, #B08F49 118.71%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            text-fill-color: transparent;
-            z-index: 2;
-        }
-
-        .americas-subtitle {
-            position: absolute;
-            width: 362px;
-            height: 72px;
-            left: 379px;
-            top: 748px;
-            font-family: 'Montserrat';
-            font-style: normal;
-            font-weight: 700;
-            font-size: 36px;
-            line-height: 100%;
-            display: flex;
-            align-items: center;
-            text-align: center;
-            background: linear-gradient(180deg, #CBA655 0%, #F0EBB6 24.93%, #DBB45F 57.57%, #B08F49 118.71%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            text-fill-color: transparent;
-            z-index: 2;
-        }
-
-        /* Player frames */
-        .standings-container {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 15px;
-            position: absolute;
-            width: 788px;
-            height: 786px;
-            left: 966px;
-            top: 222px;
-            z-index: 2;
         }
 
         .frame {
-            width: 788px;
-            height: 74px;
-            filter: drop-shadow(0px 6.20061px 31.003px rgba(0, 0, 0, 0.8));
-            border-radius: 10px;
             position: relative;
             margin-bottom: 15px;
-        }
-
-        .gold-background {
-            position: absolute;
             width: 788px;
             height: 74px;
-            left: 0px;
-            top: 0px;
-            background: linear-gradient(180deg, #CBA655 0%, #F0EBB6 24.93%, #DBB45F 57.57%, #B08F49 118.71%);
-            border-radius: 10px;
-        }
-
-        .black-background {
-            position: absolute;
-            width: 660px;
-            height: 74px;
-            left: 0px;
-            top: 0px;
-            background: #000000;
-            box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
         }
 
         .player-name {
@@ -186,7 +41,7 @@
             -webkit-text-fill-color: transparent;
             background-clip: text;
             text-fill-color: transparent;
-            z-index: 1;
+            z-index: 10;
             white-space: nowrap;
             overflow: hidden;
             display: flex;
@@ -206,121 +61,44 @@
             line-height: 120%;
             text-align: right;
             color: #000000;
-            z-index: 1;
+            z-index: 10;
         }
 
-        .flag {
+        /* Main players on the right */
+        #standings-container {
             position: absolute;
-            width: 64px;
-            height: 64px;
-            left: 596px;
-            top: 5px;
-            filter: drop-shadow(0px 0px 4px rgba(0, 0, 0, 0.25));
-            object-fit: contain;
-            z-index: 1;
-        }
-
-        /* Bottom players section */
-        .bottom-players {
-            position: absolute;
-            bottom: 72px;
-            left: 163px;
+            width: 788px;
+            top: 222px;
+            left: 966px;
             display: flex;
             flex-direction: column;
             gap: 15px;
-            z-index: 2;
         }
 
-        #debug {
-            position: fixed;
-            bottom: 10px;
-            right: 10px;
-            background: rgba(0, 0, 0, 0.7);
-            color: #00aa00;
-            padding: 5px;
-            font-family: monospace;
-            font-size: 12px;
-            z-index: 1000;
+        /* Bottom players */
+        #bottom-players {
+            position: absolute;
+            width: 788px;
+            left: 163px;
+            bottom: 72px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
         }
     </style>
 </head>
 <body>
-    <!-- Background gradient -->
-    <div class="background-gradient"></div>
-    
-    <!-- Header section -->
-    <div class="header-group">
-        <div class="header-background"></div>
-        <div class="gold-line"></div>
-        <div class="title">TEAMS TO WATCH</div>
-    </div>
-    
-    <!-- FAB Logo -->
-    <img src="/static/fab_logo_hires.png" class="fab-logo" alt="Flesh and Blood Logo">
-    
-    <!-- Team title -->
-    <div class="runaways-title">RUNAWAYS</div>
-    <div class="americas-subtitle">AMERICAS</div>
-    
-    <!-- Team image -->
-    <img src="/static/Runaways.png" style="position: absolute; width: 398px; height: 421px; left: 358px; top: 243px; z-index: 1;" alt="Runaways Team">
-    
     <!-- Players container -->
-    <div id="standings-container" class="standings-container">
+    <div id="standings-container">
         <!-- Standings will be dynamically inserted here -->
     </div>
     
     <!-- Bottom players -->
-    <div class="bottom-players" id="bottom-players">
+    <div id="bottom-players">
         <!-- Bottom players will be dynamically inserted here -->
     </div>
-    
-    <div id="debug"></div>
 
     <script>
-        const debug = document.getElementById('debug');
-        
-        function showDebug(message) {
-            debug.textContent = message;
-            console.log(message);
-        }
-
-        function fitText(element) {
-            const maxWidth = 387;
-            const originalFontSize = 56;
-            
-            element.style.fontSize = originalFontSize + 'px';
-            
-            while (element.scrollWidth > maxWidth && parseFloat(element.style.fontSize) > 20) {
-                const currentSize = parseFloat(element.style.fontSize);
-                element.style.fontSize = (currentSize - 1) + 'px';
-            }
-        }
-
-        function createPlayerEntry(player, flag, wins, index) {
-            // Convert wins to number to ensure proper calculation
-            const winCount = parseInt(wins);
-            // Get current round from the roundNumber span
-            const currentRound = parseInt(document.getElementById('roundNumber')?.textContent || '1');
-            // Calculate losses (if wins equal current round, losses are 0)
-            const lossCount = winCount >= currentRound ? 0 : currentRound - winCount;
-            // Format the record as "W-L" or "DROP" if player has dropped
-            const record = player.isDropped ? 'DROP' : `${winCount}-${lossCount}`;
-
-            return `
-                <div class="frame">
-                    <div class="gold-background"></div>
-                    <div class="black-background"></div>
-                    <div class="player-name">${player.name}</div>
-                    ${flag ? `<img class="flag" 
-                         src="https://flagcdn.com/w80/${flag.toLowerCase()}.png"
-                         onerror="this.src='https://flagsapi.com/${flag}/flat/64.png'"
-                         alt="${flag} flag">` : ''}
-                    <div class="player-score">${record}</div>
-                </div>
-            `;
-        }
-
         // Define the fixed list of runaways players with their scraped names
         const MAIN_PLAYERS = [
             { name: "NAIB MOBASSIR", scrapedNames: ["Naib Mobassir"] },
@@ -338,8 +116,12 @@
             { name: "CONNOR BRYANT", scrapedNames: ["Connor Bryant"] }
         ];
 
+        function normalizePlayerName(name) {
+            return name.trim();
+        }
+
         function findPlayerMatch(scrapedName, mappings) {
-            scrapedName = scrapedName.trim();
+            scrapedName = normalizePlayerName(scrapedName);
             for (const player of mappings) {
                 if (player.scrapedNames.includes(scrapedName)) {
                     return player;
@@ -348,98 +130,91 @@
             return null;
         }
 
-        async function updateStandings() {
-            showDebug('Fetching standings...');
-            
-            try {
-                // Add hidden round number element if it doesn't exist
-                if (!document.getElementById('roundNumber')) {
-                    const roundElem = document.createElement('span');
-                    roundElem.id = 'roundNumber';
-                    roundElem.style.display = 'none';
-                    document.body.appendChild(roundElem);
-                }
+        function createPlayerEntry(player, record) {
+            return `
+                <div class="frame">
+                    <div class="player-name">${player}</div>
+                    <div class="player-score">${record}</div>
+                </div>
+            `;
+        }
 
+        async function updateStandings() {
+            try {
                 // Fetch current round
                 const roundResponse = await fetch('/get-round');
                 const roundData = await roundResponse.json();
-                document.getElementById('roundNumber').textContent = roundData.round;
-                
+                const currentRound = roundData.round;
+
                 // Fetch standings
-                const response = await fetch('/standings?source=runaways');
-                if (!response.ok) {
-                    const text = await response.text();
-                    showDebug(`Error (${response.status}): ${text}`);
-                    return;
+                const standingsResponse = await fetch('/standings?source=runaways');
+                const data = await standingsResponse.json();
+                
+                if (data.standings || data.droppedPlayers) {
+                    // Create a map to store player status and data
+                    const playerStatusMap = new Map();
+
+                    // Process all players (both active and dropped)
+                    const allPlayers = [...data.standings, ...(data.droppedPlayers || [])];
+                    allPlayers.forEach(entry => {
+                        const matchedMainPlayer = findPlayerMatch(entry.player, MAIN_PLAYERS);
+                        const matchedBottomPlayer = findPlayerMatch(entry.player, BOTTOM_PLAYERS);
+                        
+                        if (matchedMainPlayer) {
+                            playerStatusMap.set(matchedMainPlayer.name, {
+                                isDropped: entry.isDropped || false,
+                                wins: parseInt(entry.wins)
+                            });
+                        } else if (matchedBottomPlayer) {
+                            playerStatusMap.set(matchedBottomPlayer.name, {
+                                isDropped: entry.isDropped || false,
+                                wins: parseInt(entry.wins)
+                            });
+                        }
+                    });
+
+                    // Generate HTML for main players
+                    let mainHtml = '';
+                    MAIN_PLAYERS.forEach(player => {
+                        const playerData = playerStatusMap.get(player.name);
+                        let record = '0-0';
+                        
+                        if (playerData) {
+                            if (playerData.isDropped) {
+                                record = 'DROP';
+                            } else {
+                                const wins = playerData.wins;
+                                const losses = wins >= currentRound ? 0 : currentRound - wins;
+                                record = `${wins}-${losses}`;
+                            }
+                        }
+
+                        mainHtml += createPlayerEntry(player.name, record);
+                    });
+                    document.getElementById('standings-container').innerHTML = mainHtml;
+
+                    // Generate HTML for bottom players
+                    let bottomHtml = '';
+                    BOTTOM_PLAYERS.forEach(player => {
+                        const playerData = playerStatusMap.get(player.name);
+                        let record = '0-0';
+                        
+                        if (playerData) {
+                            if (playerData.isDropped) {
+                                record = 'DROP';
+                            } else {
+                                const wins = playerData.wins;
+                                const losses = wins >= currentRound ? 0 : currentRound - wins;
+                                record = `${wins}-${losses}`;
+                            }
+                        }
+
+                        bottomHtml += createPlayerEntry(player.name, record);
+                    });
+                    document.getElementById('bottom-players').innerHTML = bottomHtml;
                 }
-                
-                const data = await response.json();
-                
-                if (data.error) {
-                    showDebug('Error: ' + data.error);
-                    return;
-                }
-                
-                // Create a map to store player status and data
-                const playerStatusMap = new Map();
-
-                // Process all players (both active and dropped)
-                const allPlayers = [...data.standings, ...(data.droppedPlayers || [])];
-                allPlayers.forEach(entry => {
-                    const matchedMainPlayer = findPlayerMatch(entry.player, MAIN_PLAYERS);
-                    const matchedBottomPlayer = findPlayerMatch(entry.player, BOTTOM_PLAYERS);
-                    
-                    if (matchedMainPlayer) {
-                        playerStatusMap.set(matchedMainPlayer.name, {
-                            name: matchedMainPlayer.name,
-                            wins: parseInt(entry.wins),
-                            flag: entry.flag || 'US',
-                            isDropped: entry.isDropped || false
-                        });
-                    } else if (matchedBottomPlayer) {
-                        playerStatusMap.set(matchedBottomPlayer.name, {
-                            name: matchedBottomPlayer.name,
-                            wins: parseInt(entry.wins),
-                            flag: entry.flag || 'US',
-                            isDropped: entry.isDropped || false
-                        });
-                    }
-                });
-
-                // Generate HTML for main players
-                let mainHtml = '';
-                MAIN_PLAYERS.forEach((player, index) => {
-                    const playerData = playerStatusMap.get(player.name);
-                    if (playerData) {
-                        mainHtml += createPlayerEntry(playerData, playerData.flag, playerData.wins, index);
-                    } else {
-                        // Default player with 0 wins if not found
-                        mainHtml += createPlayerEntry({name: player.name, isDropped: false}, 'US', 0, index);
-                    }
-                });
-                document.getElementById('standings-container').innerHTML = mainHtml;
-
-                // Generate HTML for bottom players
-                let bottomHtml = '';
-                BOTTOM_PLAYERS.forEach((player, index) => {
-                    const playerData = playerStatusMap.get(player.name);
-                    if (playerData) {
-                        bottomHtml += createPlayerEntry(playerData, playerData.flag, playerData.wins, index);
-                    } else {
-                        // Default player with 0 wins if not found
-                        bottomHtml += createPlayerEntry({name: player.name, isDropped: false}, 'US', 0, index);
-                    }
-                });
-                document.getElementById('bottom-players').innerHTML = bottomHtml;
-
-                // Fit text for all player names
-                document.querySelectorAll('.player-name').forEach(nameElement => {
-                    fitText(nameElement);
-                });
-                
-                showDebug(`Updated standings with ${playerStatusMap.size} players found`);
             } catch (error) {
-                showDebug('Error: ' + error.message);
+                console.error('Error updating standings:', error);
             }
         }
 
