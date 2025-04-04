@@ -12,22 +12,41 @@
             width: 1920px;
             height: 1080px;
             background-image: url('/static/background.png');
-            background-size: cover;
-            background-position: center;
+            background-size: 1920px 1080px;
+            background-position: top left;
             background-repeat: no-repeat;
             overflow: hidden;
         }
 
-        .player-entry {
-            position: relative;
-            margin-bottom: 89px; /* Gap between entries based on the provided positions */
+        .frame {
+            position: absolute;
+            width: 788px;
+            height: 74px;
+            left: 566px;
+            filter: drop-shadow(0px 6.20061px 31.003px rgba(0, 0, 0, 0.8));
+            border-radius: 10px;
+            background: #000000;
+            box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
         }
+
+        /* Frame positions */
+        .frame:nth-child(1) { top: 178px; }
+        .frame:nth-child(2) { top: 267px; }
+        .frame:nth-child(3) { top: 356px; }
+        .frame:nth-child(4) { top: 445px; }
+        .frame:nth-child(5) { top: 534px; }
+        .frame:nth-child(6) { top: 623px; }
+        .frame:nth-child(7) { top: 712px; }
+        .frame:nth-child(8) { top: 801px; }
+        .frame:nth-child(9) { top: 890px; }
+        .frame:nth-child(10) { top: 979px; }
 
         .player-name {
             position: absolute;
             width: 387px;
             height: 67px;
-            left: 710px;
+            left: 144px;
+            top: 7px;
             font-family: 'Bebas Neue';
             font-style: normal;
             font-weight: 400;
@@ -37,13 +56,15 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            text-fill-color: transparent;
         }
 
         .flag {
             position: absolute;
             width: 64px;
             height: 64px;
-            left: 1162px;
+            left: 596px;
+            top: 7px;
             filter: drop-shadow(0px 0px 4px rgba(0, 0, 0, 0.25));
         }
 
@@ -51,7 +72,8 @@
             position: absolute;
             width: 143px;
             height: 67px;
-            left: 1191px;
+            left: 625px;
+            top: 7px;
             font-family: 'Bebas Neue';
             font-style: normal;
             font-weight: 400;
@@ -63,7 +85,8 @@
 
         #standings-container {
             position: relative;
-            top: 185px; /* Starting position of first entry */
+            width: 1920px;
+            height: 1080px;
         }
 
         #debug {
@@ -95,7 +118,7 @@
 
         function createPlayerEntry(player, flag, score, index) {
             return `
-                <div class="player-entry">
+                <div class="frame">
                     <div class="player-name">${player}</div>
                     ${flag ? `<img class="flag" 
                          src="https://flagcdn.com/w80/${flag.toLowerCase()}.png"
