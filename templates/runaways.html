@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FAB Tournament Standings - Runaways View</title>
+    <title>FAB Tournament Runaways - Stream View</title>
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@700&display=swap" rel="stylesheet">
     <style>
         body {
@@ -16,74 +16,41 @@
             background-position: top left;
             background-repeat: no-repeat;
             overflow: hidden;
-            font-family: 'Bebas Neue', sans-serif;
         }
 
-        /* Right side player list container */
-        #standings-container {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            padding: 0px;
-            gap: 15px;
+        /* Main player frames (right side) */
+        .main-player {
             position: absolute;
             width: 788px;
-            height: 786px;
+            height: 74px;
             left: 966px;
-            top: 222px;
-            z-index: 10;
         }
+        
+        /* Main player positions */
+        .main-player:nth-child(1) { top: 222px; }
+        .main-player:nth-child(2) { top: 311px; }
+        .main-player:nth-child(3) { top: 400px; }
+        .main-player:nth-child(4) { top: 489px; }
+        .main-player:nth-child(5) { top: 578px; }
+        .main-player:nth-child(6) { top: 667px; }
+        .main-player:nth-child(7) { top: 756px; }
+        .main-player:nth-child(8) { top: 845px; }
 
-        /* Bottom player container - exact positions */
-        #bottom-players {
+        /* Bottom player frames */
+        .bottom-player-1 {
             position: absolute;
+            width: 788px;
+            height: 74px;
             left: 163px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            z-index: 10;
-        }
-
-        #bottom-players .frame:nth-child(1) {
             top: 845px;
         }
-
-        #bottom-players .frame:nth-child(2) {
+        
+        .bottom-player-2 {
+            position: absolute;
+            width: 788px;
+            height: 74px;
+            left: 163px;
             top: 934px;
-        }
-
-        /* Player frame styling */
-        .frame {
-            position: relative;
-            width: 788px;
-            height: 74px;
-            filter: drop-shadow(0px 6.20061px 31.003px rgba(0, 0, 0, 0.8));
-            border-radius: 10px;
-            margin-bottom: 15px;
-        }
-
-        /* Gold background */
-        .gold-background {
-            position: absolute;
-            width: 788px;
-            height: 74px;
-            left: 0px;
-            top: 0px;
-            background: linear-gradient(180deg, #CBA655 0%, #F0EBB6 24.93%, #DBB45F 57.57%, #B08F49 118.71%);
-            border-radius: 10px;
-            z-index: 1;
-        }
-
-        /* Black background */
-        .black-background {
-            position: absolute;
-            width: 660px;
-            height: 74px;
-            left: 0px;
-            top: 0px;
-            background: #000000;
-            box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
-            z-index: 2;
         }
 
         /* Player name styling */
@@ -103,11 +70,6 @@
             -webkit-text-fill-color: transparent;
             background-clip: text;
             text-fill-color: transparent;
-            z-index: 3;
-            white-space: nowrap;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
         }
 
         /* Player score styling */
@@ -124,42 +86,32 @@
             line-height: 120%;
             text-align: right;
             color: #000000;
-            z-index: 3;
         }
     </style>
 </head>
 <body>
-    <!-- Main player container -->
-    <div id="standings-container">
-        <!-- Standings will be dynamically inserted here -->
-    </div>
-    
-    <!-- Bottom players -->
-    <div id="bottom-players">
-        <!-- Bottom players will be dynamically inserted here -->
+    <div id="content">
+        <!-- All player entries will be inserted here dynamically -->
     </div>
 
     <script>
-        // Define the fixed list of runaways players with their scraped names
-        const MAIN_PLAYERS = [
-            { name: "NAIB MOBASSIR", scrapedNames: ["Naib Mobassir"] },
-            { name: "YUANJI LI", scrapedNames: ["Yuanji Li"] },
-            { name: "LUCAS OSWALD", scrapedNames: ["Lucas Oswald"] },
-            { name: "CHARLES DUNN", scrapedNames: ["Charles Dunn"] },
-            { name: "CODY WILLIAMS", scrapedNames: ["Cody Williams"] },
-            { name: "NOAH BEYGELMAN", scrapedNames: ["Noah Beygelman"] },
-            { name: "DANIEL RUTKOWSKI", scrapedNames: ["Daniel Rutkowski"] },
-            { name: "RAJ PARIKH", scrapedNames: ["Raj Parikh"] }
+        // Define the fixed list of players with their position types and scraped names
+        const PLAYERS = [
+            { type: "main", position: 1, name: "NAIB MOBASSIR", scrapedNames: ["Naib Mobassir"] },
+            { type: "main", position: 2, name: "YUANJI LI", scrapedNames: ["Yuanji Li"] },
+            { type: "main", position: 3, name: "LUCAS OSWALD", scrapedNames: ["Lucas Oswald"] },
+            { type: "main", position: 4, name: "CHARLES DUNN", scrapedNames: ["Charles Dunn"] },
+            { type: "main", position: 5, name: "CODY WILLIAMS", scrapedNames: ["Cody Williams"] },
+            { type: "main", position: 6, name: "NOAH BEYGELMAN", scrapedNames: ["Noah Beygelman"] },
+            { type: "main", position: 7, name: "DANIEL RUTKOWSKI", scrapedNames: ["Daniel Rutkowski"] },
+            { type: "main", position: 8, name: "RAJ PARIKH", scrapedNames: ["Raj Parikh"] },
+            { type: "bottom", position: 1, name: "PAT ESHGHY", scrapedNames: ["Pat Eshghy"] },
+            { type: "bottom", position: 2, name: "CONNOR BRYANT", scrapedNames: ["Connor Bryant"] }
         ];
 
-        const BOTTOM_PLAYERS = [
-            { name: "PAT ESHGHY", scrapedNames: ["Pat Eshghy"] },
-            { name: "CONNOR BRYANT", scrapedNames: ["Connor Bryant"] }
-        ];
-
-        function findPlayerMatch(scrapedName, mappings) {
+        function findPlayerMatch(scrapedName) {
             scrapedName = scrapedName.trim();
-            for (const player of mappings) {
+            for (const player of PLAYERS) {
                 if (player.scrapedNames.includes(scrapedName)) {
                     return player;
                 }
@@ -168,11 +120,13 @@
         }
 
         function createPlayerEntry(player, record) {
+            const className = player.type === "main" ? 
+                `main-player` : 
+                `bottom-player-${player.position}`;
+                
             return `
-                <div class="frame">
-                    <div class="gold-background"></div>
-                    <div class="black-background"></div>
-                    <div class="player-name">${player}</div>
+                <div class="${className}">
+                    <div class="player-name">${player.name}</div>
                     <div class="player-score">${record}</div>
                 </div>
             `;
@@ -196,25 +150,18 @@
                     // Process all players (both active and dropped)
                     const allPlayers = [...data.standings, ...(data.droppedPlayers || [])];
                     allPlayers.forEach(entry => {
-                        const matchedMainPlayer = findPlayerMatch(entry.player, MAIN_PLAYERS);
-                        const matchedBottomPlayer = findPlayerMatch(entry.player, BOTTOM_PLAYERS);
-                        
-                        if (matchedMainPlayer) {
-                            playerStatusMap.set(matchedMainPlayer.name, {
-                                isDropped: entry.isDropped || false,
-                                wins: parseInt(entry.wins)
-                            });
-                        } else if (matchedBottomPlayer) {
-                            playerStatusMap.set(matchedBottomPlayer.name, {
+                        const matchedPlayer = findPlayerMatch(entry.player);
+                        if (matchedPlayer) {
+                            playerStatusMap.set(matchedPlayer.name, {
                                 isDropped: entry.isDropped || false,
                                 wins: parseInt(entry.wins)
                             });
                         }
                     });
 
-                    // Generate HTML for main players (right side)
-                    let mainHtml = '';
-                    MAIN_PLAYERS.forEach(player => {
+                    // Generate HTML for all players
+                    let html = '';
+                    PLAYERS.forEach(player => {
                         const playerData = playerStatusMap.get(player.name);
                         let record = '0-0';
                         
@@ -228,29 +175,10 @@
                             }
                         }
 
-                        mainHtml += createPlayerEntry(player.name, record);
+                        html += createPlayerEntry(player, record);
                     });
-                    document.getElementById('standings-container').innerHTML = mainHtml;
-
-                    // Generate HTML for bottom players
-                    let bottomHtml = '';
-                    BOTTOM_PLAYERS.forEach(player => {
-                        const playerData = playerStatusMap.get(player.name);
-                        let record = '0-0';
-                        
-                        if (playerData) {
-                            if (playerData.isDropped) {
-                                record = 'DROP';
-                            } else {
-                                const wins = playerData.wins;
-                                const losses = wins >= currentRound ? 0 : currentRound - wins;
-                                record = `${wins}-${losses}`;
-                            }
-                        }
-
-                        bottomHtml += createPlayerEntry(player.name, record);
-                    });
-                    document.getElementById('bottom-players').innerHTML = bottomHtml;
+                    
+                    document.getElementById('content').innerHTML = html;
                 }
             } catch (error) {
                 console.error('Error updating standings:', error);
@@ -262,21 +190,6 @@
 
         // Update every 30 seconds
         setInterval(updateStandings, 30000);
-
-        // Apply absolute positioning to bottom players after they're created
-        function repositionBottomPlayers() {
-            const bottomPlayers = document.querySelectorAll('#bottom-players .frame');
-            if (bottomPlayers.length === 2) {
-                bottomPlayers[0].style.position = 'absolute';
-                bottomPlayers[0].style.top = '845px';
-                bottomPlayers[1].style.position = 'absolute';
-                bottomPlayers[1].style.top = '934px';
-            }
-        }
-
-        // Apply positioning after initial load and each update
-        window.addEventListener('load', repositionBottomPlayers);
-        setInterval(repositionBottomPlayers, 30500);
     </script>
 </body>
 </html> 
