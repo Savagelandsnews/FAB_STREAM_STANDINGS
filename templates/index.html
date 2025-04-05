@@ -218,6 +218,214 @@
             color: #008800; /* Darker green on hover */
         }
     </style>
+    <script src="https://js.pusher.com/8.4.0/pusher.min.js"></script>
+    <script>
+        // Enable pusher logging
+        Pusher.logToConsole = true;
+
+        var pusher = new Pusher('c9fac3f836cd290ddf7d', {
+            cluster: 'us3'
+        });
+
+        var channel = pusher.subscribe('standings-channel');
+        console.log('Subscribed to standings-channel');
+
+        // Listen for URL updates
+        channel.bind('url-update', function(data) {
+            console.log('URL update received:', data);
+            fetchStandings();
+        });
+
+        // Listen for row updates
+        channel.bind('row-update', function(data) {
+            console.log('Row update received:', data);
+            fetchStandings();
+        });
+
+        // Function to fetch standings
+        async function fetchStandings() {
+            console.log('Fetching standings...');
+            try {
+                const response = await fetch('/standings');
+                if (!response.ok) {
+                    if (response.status === 400) {
+                        const statusDiv = document.getElementById('status');
+                        statusDiv.textContent = 'Please set a standings URL first';
+                        statusDiv.className = 'status error';
+                        statusDiv.style.display = 'block';
+                        return;
+                    }
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                console.log('Standings fetched:', data);
+                updateDisplay(data);
+                return data;
+            } catch (error) {
+                console.error('Error fetching standings:', error);
+                const statusDiv = document.getElementById('status');
+                statusDiv.textContent = `Error: ${error.message}`;
+                statusDiv.className = 'status error';
+                statusDiv.style.display = 'block';
+                throw error;
+            }
+        }
+
+        // Function to update display
+        function updateDisplay(data) {
+            console.log('Updating display with data:', data);
+            // Update status message
+            const statusDiv = document.getElementById('status');
+            if (statusDiv) {
+                statusDiv.textContent = `Standings updated: ${data.standings ? data.standings.length : 0} entries`;
+                statusDiv.className = 'status success';
+                statusDiv.style.display = 'block';
+                
+                setTimeout(() => {
+                    statusDiv.style.display = 'none';
+                }, 3000);
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set up URL form
+            const urlForm = document.getElementById('urlForm');
+            if (urlForm) {
+                urlForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const urlInput = document.getElementById('urlInput');
+                    const statusDiv = document.getElementById('status');
+                    
+                    try {
+                        const response = await fetch('/update-url', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                            },
+                            body: `url=${encodeURIComponent(urlInput.value)}`
+                        });
+                        
+                        const data = await response.json();
+                        if (data.success) {
+                            statusDiv.textContent = 'URL updated successfully';
+                            statusDiv.className = 'status success';
+                            // Fetch new standings after URL update
+                            await fetchStandings();
+                        } else {
+                            throw new Error(data.message || 'Failed to update URL');
+                        }
+                    } catch (error) {
+                        statusDiv.textContent = `Error: ${error.message}`;
+                        statusDiv.className = 'status error';
+                    }
+                    statusDiv.style.display = 'block';
+                });
+            }
+
+            // Set up row controls
+            const rowButtons = document.querySelector('.row-buttons');
+            if (rowButtons) {
+                rowButtons.addEventListener('click', async (e) => {
+                    if (e.target.classList.contains('row-button')) {
+                        // Update active button
+                        document.querySelectorAll('.row-button').forEach(btn => btn.classList.remove('active'));
+                        e.target.classList.add('active');
+
+                        // Get the range
+                        const start = parseInt(e.target.dataset.start);
+                        const end = parseInt(e.target.dataset.end);
+
+                        try {
+                            const response = await fetch('/update-range', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({ start, end })
+                            });
+                            
+                            const data = await response.json();
+                            const statusDiv = document.getElementById('status');
+                            statusDiv.textContent = data.message || `Now showing rows ${start + 1}-${end}`;
+                            statusDiv.className = 'status success';
+                            statusDiv.style.display = 'block';
+                            
+                            // Fetch new standings after range update
+                            await fetchStandings();
+                            
+                            setTimeout(() => {
+                                statusDiv.style.display = 'none';
+                            }, 3000);
+                        } catch (error) {
+                            const statusDiv = document.getElementById('status');
+                            statusDiv.textContent = 'Error updating row range';
+                            statusDiv.className = 'status error';
+                            statusDiv.style.display = 'block';
+                        }
+                    }
+                });
+            }
+
+            // Set up round controls
+            const roundButton = document.querySelector('.round-button');
+            if (roundButton) {
+                roundButton.addEventListener('click', async function() {
+                    const roundNumber = document.getElementById('roundNumber').value;
+                    const statusDiv = document.getElementById('status');
+                    
+                    try {
+                        const response = await fetch('/update-round', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ round: parseInt(roundNumber) })
+                        });
+                        
+                        const data = await response.json();
+                        statusDiv.textContent = data.message || `Updated to Round ${roundNumber}`;
+                        statusDiv.className = 'status success';
+                        statusDiv.style.display = 'block';
+                        
+                        // Fetch new standings after round update
+                        await fetchStandings();
+                        
+                        setTimeout(() => {
+                            statusDiv.style.display = 'none';
+                        }, 3000);
+                    } catch (error) {
+                        statusDiv.textContent = 'Error updating round number';
+                        statusDiv.className = 'status error';
+                        statusDiv.style.display = 'block';
+                    }
+                });
+            }
+
+            // Set up stream URL and copy button
+            const streamUrl = `${window.location.origin}/stream`;
+            const streamUrlElement = document.getElementById('streamUrl');
+            if (streamUrlElement) {
+                streamUrlElement.textContent = streamUrl;
+            }
+
+            const copyButton = document.querySelector('.copy-button');
+            if (copyButton) {
+                copyButton.addEventListener('click', function() {
+                    navigator.clipboard.writeText(streamUrl).then(() => {
+                        const button = this;
+                        button.textContent = 'Copied!';
+                        setTimeout(() => {
+                            button.textContent = 'Copy';
+                        }, 2000);
+                    });
+                });
+            }
+
+            // Initial fetch
+            fetchStandings();
+        });
+    </script>
 </head>
 <body>
     <div class="container">
@@ -233,7 +441,7 @@
             <h2>Round Number</h2>
             <div class="round-input-group">
                 <input type="number" id="roundNumber" min="1" value="1" class="round-input">
-                <button onclick="updateRound()" class="round-button">Update Round</button>
+                <button class="round-button">Update Round</button>
             </div>
         </div>
 
@@ -254,7 +462,7 @@
             <p>Use this URL in OBS Browser Source:</p>
             <div class="stream-url">
                 <span id="streamUrl"></span>
-                <button class="copy-button" onclick="copyStreamUrl()">Copy</button>
+                <button class="copy-button">Copy</button>
             </div>
             <a href="/stream" target="_blank" class="view-stream">Open Stream View in New Tab →</a><br>
             <a href="/armory" target="_blank" class="view-armory">Open Armory Standings →</a><br>
@@ -269,142 +477,5 @@
           
         </div>
     </div>
-
-    <script>
-        // Set the stream URL
-        const streamUrl = `${window.location.origin}/stream`;
-        document.getElementById('streamUrl').textContent = streamUrl;
-
-        // Copy stream URL function
-        function copyStreamUrl() {
-            navigator.clipboard.writeText(streamUrl).then(() => {
-                const button = document.querySelector('.copy-button');
-                button.textContent = 'Copied!';
-                setTimeout(() => {
-                    button.textContent = 'Copy';
-                }, 2000);
-            });
-        }
-
-        document.getElementById('urlForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const url = document.getElementById('urlInput').value;
-            const statusDiv = document.getElementById('status');
-            
-            try {
-                const response = await fetch('/update-url', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: `url=${encodeURIComponent(url)}`
-                });
-                const data = await response.json();
-                
-                statusDiv.textContent = data.message || 'URL updated successfully';
-                statusDiv.className = 'status success';
-                statusDiv.style.display = 'block';
-                
-                // After successful update, check standings
-                checkStandings();
-                
-                // Hide status after 3 seconds
-                setTimeout(() => {
-                    statusDiv.style.display = 'none';
-                }, 3000);
-                
-            } catch (error) {
-                statusDiv.textContent = 'Error updating URL';
-                statusDiv.className = 'status error';
-                statusDiv.style.display = 'block';
-            }
-        });
-
-        // Function to check standings
-        async function checkStandings() {
-            try {
-                const response = await fetch('/standings');
-                const data = await response.json();
-                
-                const statusDiv = document.getElementById('status');
-                if (data.standings) {
-                    statusDiv.textContent = `Successfully fetched ${data.standings.length} standings entries`;
-                    statusDiv.className = 'status success';
-                } else if (data.error) {
-                    statusDiv.textContent = `Error: ${data.error}`;
-                    statusDiv.className = 'status error';
-                }
-                statusDiv.style.display = 'block';
-            } catch (error) {
-                console.error('Error checking standings:', error);
-            }
-        }
-
-        // Add row control functionality
-        document.querySelector('.row-buttons').addEventListener('click', async (e) => {
-            if (e.target.classList.contains('row-button')) {
-                // Update active button
-                document.querySelectorAll('.row-button').forEach(btn => btn.classList.remove('active'));
-                e.target.classList.add('active');
-
-                // Get the range
-                const start = parseInt(e.target.dataset.start);
-                const end = parseInt(e.target.dataset.end);
-
-                try {
-                    const response = await fetch('/update-range', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({ start, end })
-                    });
-                    
-                    const data = await response.json();
-                    const statusDiv = document.getElementById('status');
-                    statusDiv.textContent = data.message || `Now showing rows ${start + 1}-${end}`;
-                    statusDiv.className = 'status success';
-                    statusDiv.style.display = 'block';
-                    
-                    setTimeout(() => {
-                        statusDiv.style.display = 'none';
-                    }, 3000);
-                } catch (error) {
-                    const statusDiv = document.getElementById('status');
-                    statusDiv.textContent = 'Error updating row range';
-                    statusDiv.className = 'status error';
-                    statusDiv.style.display = 'block';
-                }
-            }
-        });
-
-        async function updateRound() {
-            const roundNumber = document.getElementById('roundNumber').value;
-            const statusDiv = document.getElementById('status');
-            
-            try {
-                const response = await fetch('/update-round', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ round: parseInt(roundNumber) })
-                });
-                
-                const data = await response.json();
-                statusDiv.textContent = data.message || `Updated to Round ${roundNumber}`;
-                statusDiv.className = 'status success';
-                statusDiv.style.display = 'block';
-                
-                setTimeout(() => {
-                    statusDiv.style.display = 'none';
-                }, 3000);
-            } catch (error) {
-                statusDiv.textContent = 'Error updating round number';
-                statusDiv.className = 'status error';
-                statusDiv.style.display = 'block';
-            }
-        }
-    </script>
 </body>
 </html>

@@ -98,27 +98,50 @@
     <script>
         // Define the fixed list of players with their position types and scraped names
         const PLAYERS = [
-            { type: "main", position: 1, name: "BRODIE SPURLOCK", scrapedNames: ["Brodie Spurlock"] },
-            { type: "main", position: 2, name: "MICHAEL FENG", scrapedNames: ["Michael Feng"] },
-            { type: "main", position: 3, name: "MICHAEL HAMILTON", scrapedNames: ["Michael Hamilton"] },
-            { type: "main", position: 4, name: "AARON SHANTZ", scrapedNames: ["Aaron Shantz"] },
-            { type: "main", position: 5, name: "YUKI LEE BENDER", scrapedNames: ["Yuki Lee Bender"] },
-            { type: "main", position: 6, name: "JACOB CLEMENTS", scrapedNames: ["Jacob Clements"] },
-            { type: "main", position: 7, name: "ARTHUR TREHET", scrapedNames: ["Arthur Trehet"] },
-            { type: "main", position: 8, name: "PABLO PINTOR", scrapedNames: ["Pablo Pintor"] },
-            { type: "main", position: 9, name: "SAM SUTHERLAND", scrapedNames: ["Sam Sutherland"] },
-            { type: "bottom", position: 1, name: "SIMON NIELSEN", scrapedNames: ["Simon Nielsen"] },
-            { type: "bottom", position: 2, name: "JUSTIN CU", scrapedNames: ["Justin Cu"] }
+            { type: "main", position: 1, name: "BRODIE SPURLOCK", scrapedNames: ["Brodie Spurlock", "BRODIE SPURLOCK"] },
+            { type: "main", position: 2, name: "MICHAEL FENG", scrapedNames: ["Michael Feng", "MICHAEL FENG"] },
+            { type: "main", position: 3, name: "MICHAEL HAMILTON", scrapedNames: ["Michael Hamilton", "MICHAEL HAMILTON"] },
+            { type: "main", position: 4, name: "AARON SHANTZ", scrapedNames: ["Aaron Shantz", "AARON SHANTZ"] },
+            { type: "main", position: 5, name: "YUKI LEE BENDER", scrapedNames: ["Yuki Lee Bender", "YUKI LEE BENDER"] },
+            { type: "main", position: 6, name: "JACOB CLEMENTS", scrapedNames: ["Jacob Clements", "JACOB CLEMENTS"] },
+            { type: "main", position: 7, name: "ARTHUR TREHET", scrapedNames: ["Arthur Trehet", "ARTHUR TREHET"] },
+            { type: "main", position: 8, name: "PABLO PINTOR", scrapedNames: ["Pablo Pintor", "PABLO PINTOR"] },
+            { type: "main", position: 9, name: "SAM SUTHERLAND", scrapedNames: ["Sam Sutherland", "SAM SUTHERLAND"] },
+            { type: "bottom", position: 1, name: "SIMON NIELSEN", scrapedNames: ["Simon Nielsen", "SIMON NIELSEN"] },
+            { type: "bottom", position: 2, name: "JUSTIN CU", scrapedNames: ["Justin Cu", "JUSTIN CU"] }
         ];
 
+        let ws = null;
+        let currentRound = 1;
+
         function findPlayerMatch(scrapedName) {
-            scrapedName = scrapedName.trim();
+            scrapedName = scrapedName.trim().toUpperCase();
+            console.log(`Looking for match for: ${scrapedName}`);
+            
             for (const player of PLAYERS) {
-                if (player.scrapedNames.includes(scrapedName)) {
-                    console.log(`Found match: ${scrapedName} for ${player.name}`);
+                // Log all possible matches we're checking
+                console.log(`Checking against player: ${player.name}`);
+                console.log(`Player's scraped names: ${player.scrapedNames.join(', ')}`);
+
+                // Check if the scraped name matches any of the player's scraped names
+                if (player.scrapedNames.some(name => name.toUpperCase() === scrapedName)) {
+                    console.log(`Found exact match: ${scrapedName} for ${player.name}`);
+                    return player;
+                }
+
+                // Check if the scraped name contains the player's name
+                if (scrapedName.includes(player.name)) {
+                    console.log(`Found partial match: ${scrapedName} contains ${player.name}`);
+                    return player;
+                }
+
+                // Check if the player's name contains the scraped name
+                if (player.name.includes(scrapedName)) {
+                    console.log(`Found partial match: ${player.name} contains ${scrapedName}`);
                     return player;
                 }
             }
+            console.log(`No match found for: ${scrapedName}`);
             return null;
         }
 
@@ -135,83 +158,123 @@
             `;
         }
 
-        async function updateStandings() {
+        function connectWebSocket() {
             try {
-                // Fetch current round
-                const roundResponse = await fetch('/get-round');
-                const roundData = await roundResponse.json();
-                const currentRound = roundData.round;
-
-                // Fetch all standings
-                const standingsResponse = await fetch('/standings?source=armory');
-                const data = await standingsResponse.json();
+                const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+                const wsUrl = `${protocol}//${window.location.host}/ws`;
+                console.log(`Connecting to WebSocket: ${wsUrl}`);
                 
-                // Debug log all standings
-                if (data.standings && data.droppedPlayers) {
-                    const allScrapedPlayers = [...data.standings, ...data.droppedPlayers];
-                    console.log("All scraped players:", allScrapedPlayers.map(p => p.player));
-                }
+                ws = new WebSocket(wsUrl);
                 
-                if (data.standings || data.droppedPlayers) {
-                    // Create a map to store player status and data
-                    const playerStatusMap = new Map();
-
-                    // Special handling for known player data
-                    // These are values we've seen in the scraped data
-                    playerStatusMap.set("MICHAEL HAMILTON", { isDropped: false, wins: 7 });
-                    playerStatusMap.set("AARON SHANTZ", { isDropped: false, wins: 6 });
-                    playerStatusMap.set("MICHAEL FENG", { isDropped: false, wins: 6 });
-                    playerStatusMap.set("YUKI LEE BENDER", { isDropped: false, wins: 7 });
-                    playerStatusMap.set("JACOB CLEMENTS", { isDropped: false, wins: 6 });
-                    playerStatusMap.set("SAM SUTHERLAND", { isDropped: false, wins: 6 });
-                    playerStatusMap.set("JUSTIN CU", { isDropped: false, wins: 6 });
-                    playerStatusMap.set("ARTHUR TREHET", { isDropped: false, wins: 5 });
-                    playerStatusMap.set("PABLO PINTOR", { isDropped: false, wins: 4 });
-                    
-                    // Process all players from scraped data (active and dropped)
-                    const allPlayers = [...data.standings, ...(data.droppedPlayers || [])];
-                    allPlayers.forEach(entry => {
-                        const matchedPlayer = findPlayerMatch(entry.player);
-                        if (matchedPlayer) {
-                            playerStatusMap.set(matchedPlayer.name, {
-                                isDropped: entry.isDropped || false,
-                                wins: parseInt(entry.wins)
-                            });
-                        }
-                    });
-
-                    // Generate HTML for all players
-                    let html = '';
-                    PLAYERS.forEach(player => {
-                        const playerData = playerStatusMap.get(player.name);
-                        let record = '0-0';
-                        
-                        if (playerData) {
-                            if (playerData.isDropped) {
-                                record = 'DROP';
-                            } else {
-                                const wins = playerData.wins;
-                                const losses = wins >= currentRound ? 0 : currentRound - wins;
-                                record = `${wins}-${losses}`;
-                            }
-                            console.log(`Setting ${player.name}: ${record}`);
-                        }
-
-                        html += createPlayerEntry(player, record);
-                    });
-                    
-                    document.getElementById('content').innerHTML = html;
-                }
+                ws.onopen = () => {
+                    console.log('WebSocket connected');
+                    // Fetch initial standings when WebSocket connects
+                    fetchStandings();
+                };
+                
+                ws.onclose = () => {
+                    console.log('WebSocket disconnected. Reconnecting...');
+                    setTimeout(connectWebSocket, 1000);
+                };
+                
+                ws.onerror = (error) => {
+                    console.error('WebSocket error:', error);
+                };
+                
+                ws.onmessage = (event) => {
+                    try {
+                        const data = JSON.parse(event.data);
+                        console.log('Received WebSocket update:', data);
+                        updateDisplay(data);
+                    } catch (error) {
+                        console.error('Error parsing WebSocket message:', error);
+                    }
+                };
             } catch (error) {
-                console.error('Error updating standings:', error);
+                console.error('Error setting up WebSocket:', error);
             }
         }
 
-        // Initial update
-        updateStandings();
+        async function fetchStandings() {
+            try {
+                const response = await fetch('/standings?source=armory');
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('Fetched standings:', data);
+                    updateDisplay(data);
+                } else {
+                    console.error('Error fetching standings:', response.status);
+                }
+            } catch (error) {
+                console.error('Error fetching standings:', error);
+            }
+        }
 
-        // Update every 30 seconds
-        setInterval(updateStandings, 30000);
+        async function updateRoundNumber() {
+            try {
+                const response = await fetch('/round');
+                if (response.ok) {
+                    const data = await response.json();
+                    currentRound = data.round;
+                    console.log(`Round number updated to: ${currentRound}`);
+                }
+            } catch (error) {
+                console.error('Error fetching round number:', error);
+            }
+        }
+
+        function updateDisplay(data) {
+            if (data.standings || data.droppedPlayers) {
+                // Create a map to store player status and data
+                const playerStatusMap = new Map();
+
+                // Log all scraped players for debugging
+                const allPlayers = [...data.standings, ...(data.droppedPlayers || [])];
+                console.log('All scraped players:', allPlayers.map(p => p.player));
+
+                // Process all players from scraped data (active and dropped)
+                allPlayers.forEach(entry => {
+                    const matchedPlayer = findPlayerMatch(entry.player);
+                    if (matchedPlayer) {
+                        playerStatusMap.set(matchedPlayer.name, {
+                            isDropped: entry.isDropped || false,
+                            wins: parseInt(entry.wins)
+                        });
+                    }
+                });
+
+                // Generate HTML for all players
+                let html = '';
+                PLAYERS.forEach(player => {
+                    const playerData = playerStatusMap.get(player.name);
+                    let record = '0-0';
+                    
+                    if (playerData) {
+                        if (playerData.isDropped) {
+                            record = 'DROP';
+                        } else {
+                            const wins = playerData.wins;
+                            const losses = wins >= currentRound ? 0 : currentRound - wins;
+                            record = `${wins}-${losses}`;
+                        }
+                        console.log(`Setting ${player.name}: ${record}`);
+                    } else {
+                        console.log(`No data found for ${player.name}`);
+                    }
+
+                    html += createPlayerEntry(player, record);
+                });
+                
+                document.getElementById('content').innerHTML = html;
+            }
+        }
+
+        // Initial setup
+        connectWebSocket();
+        updateRoundNumber();
+
+        // Update round number every 30 seconds
+        setInterval(updateRoundNumber, 30000);
     </script>
 </body>
 </html> 
