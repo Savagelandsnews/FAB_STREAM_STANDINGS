@@ -20,6 +20,54 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+def parse_standings(html_content):
+    """Parse standings from HTML content."""
+    soup = BeautifulSoup(html_content, 'html.parser')
+    table = soup.find('table')
+    
+    if not table:
+        logger.error("No standings table found in the response")
+        return [], []
+
+    active_players = []
+    dropped_players = []
+    
+    rows = table.find_all('tr')[1:]  # Skip header row
+    for row in rows:
+        cols = row.find_all('td')
+        if len(cols) >= 3:
+            rank = cols[0].text.strip()
+            wins = cols[2].text.strip()
+            player_cell = cols[1]
+            
+            # Skip empty rows
+            if not player_cell.text.strip() or not wins:
+                continue
+            
+            # Extract flag from player cell
+            flag = None
+            flag_element = player_cell.find(class_='flag')
+            if flag_element:
+                flag_classes = [c for c in flag_element['class'] if c != 'flag']
+                if flag_classes:
+                    flag = flag_classes[0].upper()
+            
+            player_data = {
+                'rank': rank,
+                'player': player_cell.text.strip(),
+                'wins': wins,
+                'flag': flag,
+                'isDropped': rank == 'Dropped'
+            }
+            
+            if rank == 'Dropped':
+                dropped_players.append(player_data)
+            else:
+                active_players.append(player_data)
+    
+    logger.info(f"Parsed {len(active_players)} active players and {len(dropped_players)} dropped players")
+    return active_players, dropped_players
+
 # Create FastAPI app
 app = FastAPI()
 
