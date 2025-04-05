@@ -111,8 +111,8 @@ async def update_range(range_data: RowRange):
     })
 
 @app.get("/standings")
-async def get_standings():
-    global current_url, cache
+async def get_standings(source: str = None):
+    global current_url, cache, row_range
     
     if not current_url:
         logger.warning("No URL set for standings fetch")
@@ -146,28 +146,62 @@ async def get_standings():
             )
         
         standings = []
-        for row in table.find_all('tr')[1:]:  # Skip header row
+        dropped_players = []
+        
+        rows = table.find_all('tr')[1:]  # Skip header row
+        for row in rows:
             cols = row.find_all('td')
             if len(cols) >= 3:
-                flag = None
+                rank = cols[0].text.strip()
+                wins = cols[2].text.strip()
                 player_cell = cols[1]
-                for element in player_cell.find_all(class_='flag'):
-                    flag_classes = [c for c in element['class'] if c != 'flag']
+                
+                # Skip empty rows
+                if not player_cell.text.strip() or not wins:
+                    continue
+                
+                # Extract flag from player cell
+                flag = None
+                flag_element = player_cell.find(class_='flag')
+                if flag_element:
+                    flag_classes = [c for c in flag_element['class'] if c != 'flag']
                     if flag_classes:
                         flag = flag_classes[0].upper()
-                        break
                 
-                standings.append({
-                    'rank': cols[0].text.strip(),
-                    'player': cols[1].text.strip(),
-                    'wins': cols[2].text.strip(),
-                    'flag': flag
-                })
+                player_data = {
+                    'rank': rank,
+                    'player': player_cell.text.strip(),
+                    'wins': wins,
+                    'flag': flag,
+                    'isDropped': rank == 'Dropped'
+                }
+                
+                if rank == 'Dropped':
+                    dropped_players.append(player_data)
+                else:
+                    standings.append(player_data)
         
-        # Broadcast the standings to all connected WebSocket clients
-        await manager.broadcast(json.dumps({"standings": standings}))
+        logger.info(f"Found {len(standings)} active players and {len(dropped_players)} dropped players")
         
-        return JSONResponse(content={"standings": standings})
+        # Only apply row range filter if not from bluepitch
+        if source != 'bluepitch':
+            standings = standings[row_range["start"]:row_range["end"]]
+            logger.info(f"Returning standings rows {row_range['start'] + 1}-{row_range['end']} of {len(standings)} total entries")
+        else:
+            logger.info(f"Returning all standings for bluepitch view")
+        
+        # Prepare response data
+        response_data = {
+            "standings": standings,
+            "droppedPlayers": dropped_players,
+            "total": len(standings) + len(dropped_players),
+            "showing": "all" if source == 'bluepitch' else f"{row_range['start'] + 1}-{row_range['end']}"
+        }
+        
+        # Broadcast to all WebSocket clients
+        await manager.broadcast(json.dumps(response_data))
+        
+        return JSONResponse(content=response_data)
         
     except Exception as e:
         logger.error(f"Error fetching standings: {str(e)}")

@@ -111,6 +111,9 @@
             { type: "bottom", position: 2, name: "JUSTIN CU", scrapedNames: ["Justin Cu"] }
         ];
 
+        let ws = null;
+        let currentRound = 1;
+
         function findPlayerMatch(scrapedName) {
             scrapedName = scrapedName.trim();
             for (const player of PLAYERS) {
@@ -135,83 +138,100 @@
             `;
         }
 
-        async function updateStandings() {
+        function connectWebSocket() {
             try {
-                // Fetch current round
-                const roundResponse = await fetch('/get-round');
-                const roundData = await roundResponse.json();
-                const currentRound = roundData.round;
-
-                // Fetch all standings
-                const standingsResponse = await fetch('/standings?source=armory');
-                const data = await standingsResponse.json();
+                const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+                const wsUrl = `${protocol}//${window.location.host}/ws`;
+                console.log(`Connecting to WebSocket: ${wsUrl}`);
                 
-                // Debug log all standings
-                if (data.standings && data.droppedPlayers) {
-                    const allScrapedPlayers = [...data.standings, ...data.droppedPlayers];
-                    console.log("All scraped players:", allScrapedPlayers.map(p => p.player));
-                }
+                ws = new WebSocket(wsUrl);
                 
-                if (data.standings || data.droppedPlayers) {
-                    // Create a map to store player status and data
-                    const playerStatusMap = new Map();
-
-                    // Special handling for known player data
-                    // These are values we've seen in the scraped data
-                    playerStatusMap.set("MICHAEL HAMILTON", { isDropped: false, wins: 7 });
-                    playerStatusMap.set("AARON SHANTZ", { isDropped: false, wins: 6 });
-                    playerStatusMap.set("MICHAEL FENG", { isDropped: false, wins: 6 });
-                    playerStatusMap.set("YUKI LEE BENDER", { isDropped: false, wins: 7 });
-                    playerStatusMap.set("JACOB CLEMENTS", { isDropped: false, wins: 6 });
-                    playerStatusMap.set("SAM SUTHERLAND", { isDropped: false, wins: 6 });
-                    playerStatusMap.set("JUSTIN CU", { isDropped: false, wins: 6 });
-                    playerStatusMap.set("ARTHUR TREHET", { isDropped: false, wins: 5 });
-                    playerStatusMap.set("PABLO PINTOR", { isDropped: false, wins: 4 });
-                    
-                    // Process all players from scraped data (active and dropped)
-                    const allPlayers = [...data.standings, ...(data.droppedPlayers || [])];
-                    allPlayers.forEach(entry => {
-                        const matchedPlayer = findPlayerMatch(entry.player);
-                        if (matchedPlayer) {
-                            playerStatusMap.set(matchedPlayer.name, {
-                                isDropped: entry.isDropped || false,
-                                wins: parseInt(entry.wins)
-                            });
-                        }
-                    });
-
-                    // Generate HTML for all players
-                    let html = '';
-                    PLAYERS.forEach(player => {
-                        const playerData = playerStatusMap.get(player.name);
-                        let record = '0-0';
-                        
-                        if (playerData) {
-                            if (playerData.isDropped) {
-                                record = 'DROP';
-                            } else {
-                                const wins = playerData.wins;
-                                const losses = wins >= currentRound ? 0 : currentRound - wins;
-                                record = `${wins}-${losses}`;
-                            }
-                            console.log(`Setting ${player.name}: ${record}`);
-                        }
-
-                        html += createPlayerEntry(player, record);
-                    });
-                    
-                    document.getElementById('content').innerHTML = html;
-                }
+                ws.onopen = () => {
+                    console.log('WebSocket connected');
+                };
+                
+                ws.onclose = () => {
+                    console.log('WebSocket disconnected. Reconnecting...');
+                    setTimeout(connectWebSocket, 1000);
+                };
+                
+                ws.onerror = (error) => {
+                    console.error('WebSocket error:', error);
+                };
+                
+                ws.onmessage = (event) => {
+                    try {
+                        const data = JSON.parse(event.data);
+                        updateDisplay(data);
+                    } catch (error) {
+                        console.error('Error parsing WebSocket message:', error);
+                    }
+                };
             } catch (error) {
-                console.error('Error updating standings:', error);
+                console.error('Error setting up WebSocket:', error);
             }
         }
 
-        // Initial update
-        updateStandings();
+        async function updateRoundNumber() {
+            try {
+                const response = await fetch('/round');
+                if (response.ok) {
+                    const data = await response.json();
+                    currentRound = data.round;
+                    console.log(`Round number updated to: ${currentRound}`);
+                }
+            } catch (error) {
+                console.error('Error fetching round number:', error);
+            }
+        }
 
-        // Update every 30 seconds
-        setInterval(updateStandings, 30000);
+        function updateDisplay(data) {
+            if (data.standings || data.droppedPlayers) {
+                // Create a map to store player status and data
+                const playerStatusMap = new Map();
+
+                // Process all players from scraped data (active and dropped)
+                const allPlayers = [...data.standings, ...(data.droppedPlayers || [])];
+                allPlayers.forEach(entry => {
+                    const matchedPlayer = findPlayerMatch(entry.player);
+                    if (matchedPlayer) {
+                        playerStatusMap.set(matchedPlayer.name, {
+                            isDropped: entry.isDropped || false,
+                            wins: parseInt(entry.wins)
+                        });
+                    }
+                });
+
+                // Generate HTML for all players
+                let html = '';
+                PLAYERS.forEach(player => {
+                    const playerData = playerStatusMap.get(player.name);
+                    let record = '0-0';
+                    
+                    if (playerData) {
+                        if (playerData.isDropped) {
+                            record = 'DROP';
+                        } else {
+                            const wins = playerData.wins;
+                            const losses = wins >= currentRound ? 0 : currentRound - wins;
+                            record = `${wins}-${losses}`;
+                        }
+                        console.log(`Setting ${player.name}: ${record}`);
+                    }
+
+                    html += createPlayerEntry(player, record);
+                });
+                
+                document.getElementById('content').innerHTML = html;
+            }
+        }
+
+        // Initial setup
+        connectWebSocket();
+        updateRoundNumber();
+
+        // Update round number every 30 seconds
+        setInterval(updateRoundNumber, 30000);
     </script>
 </body>
 </html> 
