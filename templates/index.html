@@ -402,24 +402,29 @@
                 });
             }
 
+            // Set up stream URL and copy button
+            const streamUrl = `${window.location.origin}/stream`;
+            const streamUrlElement = document.getElementById('streamUrl');
+            if (streamUrlElement) {
+                streamUrlElement.textContent = streamUrl;
+            }
+
+            const copyButton = document.querySelector('.copy-button');
+            if (copyButton) {
+                copyButton.addEventListener('click', function() {
+                    navigator.clipboard.writeText(streamUrl).then(() => {
+                        const button = this;
+                        button.textContent = 'Copied!';
+                        setTimeout(() => {
+                            button.textContent = 'Copy';
+                        }, 2000);
+                    });
+                });
+            }
+
             // Initial fetch
             fetchStandings();
         });
-
-        // Set the stream URL
-        const streamUrl = `${window.location.origin}/stream`;
-        document.getElementById('streamUrl').textContent = streamUrl;
-
-        // Copy stream URL function
-        function copyStreamUrl() {
-            navigator.clipboard.writeText(streamUrl).then(() => {
-                const button = document.querySelector('.copy-button');
-                button.textContent = 'Copied!';
-                setTimeout(() => {
-                    button.textContent = 'Copy';
-                }, 2000);
-            });
-        }
     </script>
 </head>
 <body>
@@ -457,7 +462,7 @@
             <p>Use this URL in OBS Browser Source:</p>
             <div class="stream-url">
                 <span id="streamUrl"></span>
-                <button class="copy-button" onclick="copyStreamUrl()">Copy</button>
+                <button class="copy-button">Copy</button>
             </div>
             <a href="/stream" target="_blank" class="view-stream">Open Stream View in New Tab →</a><br>
             <a href="/armory" target="_blank" class="view-armory">Open Armory Standings →</a><br>
