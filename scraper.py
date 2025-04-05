@@ -212,8 +212,13 @@ async def update_round(round_data: dict):
         "message": f"Updated to Round {current_round}"
     })
 
-@app.get("/get-round")
+@app.get("/round")
 async def get_round():
+    global current_round
+    return JSONResponse(content={"round": current_round})
+
+@app.get("/get-round")
+async def get_round_legacy():
     global current_round
     return JSONResponse(content={"round": current_round})
 

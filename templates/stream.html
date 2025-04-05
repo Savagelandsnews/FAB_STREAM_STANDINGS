@@ -134,6 +134,7 @@
     <script>
         const debug = document.getElementById('debug');
         let ws = null;
+        let currentRound = 1;
         
         function showDebug(message) {
             debug.textContent = message;
@@ -189,7 +190,6 @@
 
         function createPlayerEntry(player, flag, wins, index) {
             const winCount = parseInt(wins);
-            const currentRound = parseInt(document.getElementById('roundNumber').textContent);
             const lossCount = winCount >= currentRound ? 0 : currentRound - winCount;
             const record = `${winCount}-${lossCount}`;
 
@@ -231,17 +231,15 @@
             }
         }
 
-        // Initial connection
-        connectWebSocket();
-
         // Keep fetching round number periodically
         async function updateRoundNumber() {
             try {
                 const response = await fetch('/round');
                 if (response.ok) {
                     const data = await response.json();
-                    document.getElementById('roundNumber').textContent = data.round;
-                    showDebug(`Round number updated to: ${data.round}`);
+                    currentRound = data.round;
+                    document.getElementById('roundNumber').textContent = currentRound;
+                    showDebug(`Round number updated to: ${currentRound}`);
                 } else {
                     showDebug(`Failed to fetch round number: ${response.status}`);
                 }
@@ -249,6 +247,9 @@
                 showDebug('Error fetching round number: ' + error);
             }
         }
+
+        // Initial connection
+        connectWebSocket();
 
         // Update round number every 30 seconds
         setInterval(updateRoundNumber, 30000);
