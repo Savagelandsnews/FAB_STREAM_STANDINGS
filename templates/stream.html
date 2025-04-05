@@ -108,6 +108,18 @@
             background-clip: text;
             text-fill-color: transparent;
         }
+
+        #debug {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            color: #00aa00;
+            padding: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            z-index: 1000;
+        }
     </style>
 </head>
 <body>
@@ -117,34 +129,50 @@
     <div id="standings-container">
         <!-- Standings will be dynamically inserted here -->
     </div>
+    <div id="debug"></div>
 
     <script>
+        const debug = document.getElementById('debug');
         let ws = null;
         
+        function showDebug(message) {
+            debug.textContent = message;
+            console.log(message);
+        }
+        
         function connectWebSocket() {
-            ws = new WebSocket(`ws://${window.location.host}/ws`);
-            
-            ws.onopen = () => {
-                console.log('WebSocket connected');
-            };
-            
-            ws.onclose = () => {
-                console.log('WebSocket disconnected. Reconnecting...');
-                setTimeout(connectWebSocket, 1000);
-            };
-            
-            ws.onerror = (error) => {
-                console.error('WebSocket error:', error);
-            };
-            
-            ws.onmessage = (event) => {
-                try {
-                    const data = JSON.parse(event.data);
-                    updateStandingsDisplay(data.standings);
-                } catch (error) {
-                    console.error('Error parsing WebSocket message:', error);
-                }
-            };
+            try {
+                const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+                const wsUrl = `${protocol}//${window.location.host}/ws`;
+                showDebug(`Connecting to WebSocket: ${wsUrl}`);
+                
+                ws = new WebSocket(wsUrl);
+                
+                ws.onopen = () => {
+                    showDebug('WebSocket connected');
+                };
+                
+                ws.onclose = () => {
+                    showDebug('WebSocket disconnected. Reconnecting...');
+                    setTimeout(connectWebSocket, 1000);
+                };
+                
+                ws.onerror = (error) => {
+                    showDebug('WebSocket error: ' + error);
+                };
+                
+                ws.onmessage = (event) => {
+                    try {
+                        const data = JSON.parse(event.data);
+                        showDebug(`Received standings data: ${data.standings.length} entries`);
+                        updateStandingsDisplay(data.standings);
+                    } catch (error) {
+                        showDebug('Error parsing WebSocket message: ' + error);
+                    }
+                };
+            } catch (error) {
+                showDebug('Error setting up WebSocket: ' + error);
+            }
         }
 
         function fitText(element) {
@@ -178,20 +206,28 @@
         }
 
         function updateStandingsDisplay(standings) {
-            if (standings && standings.length > 0) {
-                const standingsContainer = document.getElementById('standings-container');
-                const top10Standings = standings.slice(0, 10);
-                standingsContainer.innerHTML = top10Standings
-                    .map((entry, index) => createPlayerEntry(
-                        entry.player,
-                        entry.flag || 'US',
-                        entry.wins,
-                        index
-                    ))
-                    .join('');
-                
-                // Fit text for all player names
-                document.querySelectorAll('.player-name').forEach(fitText);
+            try {
+                if (standings && standings.length > 0) {
+                    const standingsContainer = document.getElementById('standings-container');
+                    const top10Standings = standings.slice(0, 10);
+                    showDebug(`Updating display with ${top10Standings.length} entries`);
+                    
+                    standingsContainer.innerHTML = top10Standings
+                        .map((entry, index) => createPlayerEntry(
+                            entry.player,
+                            entry.flag || 'US',
+                            entry.wins,
+                            index
+                        ))
+                        .join('');
+                    
+                    // Fit text for all player names
+                    document.querySelectorAll('.player-name').forEach(fitText);
+                } else {
+                    showDebug('No standings data received');
+                }
+            } catch (error) {
+                showDebug('Error updating standings display: ' + error);
             }
         }
 
@@ -205,9 +241,12 @@
                 if (response.ok) {
                     const data = await response.json();
                     document.getElementById('roundNumber').textContent = data.round;
+                    showDebug(`Round number updated to: ${data.round}`);
+                } else {
+                    showDebug(`Failed to fetch round number: ${response.status}`);
                 }
             } catch (error) {
-                console.error('Error fetching round number:', error);
+                showDebug('Error fetching round number: ' + error);
             }
         }
 
