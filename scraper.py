@@ -1,4 +1,4 @@
-﻿from fastapi import FastAPI, HTTPException, Form, Request
+﻿from fastapi import FastAPI, HTTPException, Form, Request, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -9,6 +9,8 @@ from bs4 import BeautifulSoup
 import logging
 import os
 from pathlib import Path
+import asyncio
+import json
 
 # Configure logging
 logging.basicConfig(
@@ -43,6 +45,28 @@ CACHE_DURATION = 30  # seconds
 
 # Add to the global variables at the top
 current_round = 1
+
+# Add WebSocket manager
+class ConnectionManager:
+    def __init__(self):
+        self.active_connections: list[WebSocket] = []
+
+    async def connect(self, websocket: WebSocket):
+        await websocket.accept()
+        self.active_connections.append(websocket)
+
+    def disconnect(self, websocket: WebSocket):
+        self.active_connections.remove(websocket)
+
+    async def broadcast(self, message: str):
+        for connection in self.active_connections:
+            try:
+                await connection.send_text(message)
+            except:
+                # Remove disconnected clients
+                self.active_connections.remove(connection)
+
+manager = ConnectionManager()
 
 @app.get("/")
 async def read_root(request: Request):
@@ -87,8 +111,8 @@ async def update_range(range_data: RowRange):
     })
 
 @app.get("/standings")
-async def get_standings(source: str = None):
-    global current_url, cache, row_range
+async def get_standings():
+    global current_url, cache
     
     if not current_url:
         logger.warning("No URL set for standings fetch")
@@ -122,56 +146,28 @@ async def get_standings(source: str = None):
             )
         
         standings = []
-        dropped_players = []
-        
-        rows = table.find_all('tr')[1:]  # Skip header row
-        for row in rows:
+        for row in table.find_all('tr')[1:]:  # Skip header row
             cols = row.find_all('td')
             if len(cols) >= 3:
-                rank = cols[0].text.strip()
-                player_cell = cols[1]
-                wins = cols[2].text.strip()
-                
-                # Skip empty rows
-                if not player_cell.text.strip() or not wins:
-                    continue
-                
-                # Extract flag from player cell
                 flag = None
-                flag_element = player_cell.find(class_='flag')
-                if flag_element:
-                    flag_classes = [c for c in flag_element['class'] if c != 'flag']
+                player_cell = cols[1]
+                for element in player_cell.find_all(class_='flag'):
+                    flag_classes = [c for c in element['class'] if c != 'flag']
                     if flag_classes:
                         flag = flag_classes[0].upper()
+                        break
                 
-                player_data = {
-                    'rank': rank,
-                    'player': player_cell.text.strip(),
-                    'wins': wins,
-                    'flag': flag,
-                    'isDropped': rank == 'Dropped'
-                }
-                
-                if rank == 'Dropped':
-                    dropped_players.append(player_data)
-                else:
-                    standings.append(player_data)
+                standings.append({
+                    'rank': cols[0].text.strip(),
+                    'player': cols[1].text.strip(),
+                    'wins': cols[2].text.strip(),
+                    'flag': flag
+                })
         
-        logger.info(f"Found {len(standings)} active players and {len(dropped_players)} dropped players")
+        # Broadcast the standings to all connected WebSocket clients
+        await manager.broadcast(json.dumps({"standings": standings}))
         
-        # Only apply row range filter if not from bluepitch
-        if source != 'bluepitch':
-            standings = standings[row_range["start"]:row_range["end"]]
-            logger.info(f"Returning standings rows {row_range['start'] + 1}-{row_range['end']} of {len(standings)} total entries")
-        else:
-            logger.info(f"Returning all standings for bluepitch view")
-        
-        return JSONResponse(content={
-            "standings": standings,
-            "droppedPlayers": dropped_players,
-            "total": len(standings) + len(dropped_players),
-            "showing": "all" if source == 'bluepitch' else f"{row_range['start'] + 1}-{row_range['end']}"
-        })
+        return JSONResponse(content={"standings": standings})
         
     except Exception as e:
         logger.error(f"Error fetching standings: {str(e)}")
@@ -220,6 +216,17 @@ async def update_round(round_data: dict):
 async def get_round():
     global current_round
     return JSONResponse(content={"round": current_round})
+
+# Add WebSocket endpoint
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    await manager.connect(websocket)
+    try:
+        while True:
+            # Keep connection alive
+            await websocket.receive_text()
+    except WebSocketDisconnect:
+        manager.disconnect(websocket)
 
 if __name__ == "__main__":
     import uvicorn
