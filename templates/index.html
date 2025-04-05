@@ -218,178 +218,61 @@
             color: #008800; /* Darker green on hover */
         }
     </style>
-    <script src="https://js.pusher.com/8.0/pusher.min.js"></script>
+    <script src="https://js.pusher.com/8.4.0/pusher.min.js"></script>
     <script>
         // Enable pusher logging
         Pusher.logToConsole = true;
 
-        // Initialize Pusher
-        const pusher = new Pusher('c9fac3f836cd290ddf7d', {
+        var pusher = new Pusher('c9fac3f836cd290ddf7d', {
             cluster: 'us3'
         });
-        console.log('Pusher initialized');
 
-        // Subscribe to the channel
-        const channel = pusher.subscribe('standings-channel');
+        var channel = pusher.subscribe('standings-channel');
         
-        // Log connection states
-        pusher.connection.bind('connecting', () => {
-            console.log('Connecting to Pusher...');
-        });
-        
-        pusher.connection.bind('connected', () => {
-            console.log('Connected to Pusher');
-        });
-        
-        pusher.connection.bind('failed', () => {
-            console.log('Connection to Pusher failed');
-        });
-        
-        // Log channel subscription
-        channel.bind('pusher:subscription_succeeded', () => {
-            console.log('Successfully subscribed to standings-channel');
-            // Test the connection
-            fetch('/test-pusher')
-                .then(response => response.json())
-                .then(data => console.log('Test response:', data))
-                .catch(error => console.error('Test error:', error));
-        });
-
-        // Handle all update types
-        channel.bind('standings-update', function(data) {
-            console.log('Received standings update:', data);
-            
-            switch(data.type) {
-                case 'url_update':
-                    console.log('Processing URL update:', data.url);
-                    handleUrlUpdate(data);
-                    break;
-                case 'row_update':
-                    console.log('Processing row update:', data);
-                    handleRowUpdate(data);
-                    break;
-                case 'test':
-                    console.log('Received test message:', data.message);
-                    break;
-                default:
-                    console.log('Unknown update type:', data.type);
-            }
-        });
-
         // Handle URL updates
-        function handleUrlUpdate(data) {
-            console.log('Handling URL update:', data);
-            
-            const urlInput = document.getElementById('urlInput');
-            if (urlInput) {
-                console.log('Updating URL input:', data.url);
-                urlInput.value = data.url;
-            }
-            
-            // Show status message
-            const statusDiv = document.getElementById('status');
-            if (statusDiv) {
-                statusDiv.textContent = 'URL updated successfully';
-                statusDiv.className = 'status success';
-                statusDiv.style.display = 'block';
-                
-                setTimeout(() => {
-                    statusDiv.style.display = 'none';
-                }, 3000);
-            }
-            
-            // Fetch new standings after URL update
-            setTimeout(() => {
+        channel.bind('url-update', function(data) {
+            console.log('URL update received:', data);
+            if (data.url) {
+                const urlInput = document.getElementById('urlInput');
+                if (urlInput) {
+                    urlInput.value = data.url;
+                }
                 fetchStandings();
-            }, 500); // Small delay to ensure URL is set
-        }
+            }
+        });
 
         // Handle row updates
-        function handleRowUpdate(data) {
-            const startRowInput = document.getElementById('startRow');
-            const endRowInput = document.getElementById('endRow');
-            
-            if (startRowInput && endRowInput) {
-                console.log('Updating row inputs:', data.start_row, '-', data.end_row);
-                startRowInput.value = data.start_row;
-                endRowInput.value = data.end_row;
+        channel.bind('row-update', function(data) {
+            console.log('Row update received:', data);
+            if (data.start_row && data.end_row) {
+                const startRowInput = document.getElementById('startRow');
+                const endRowInput = document.getElementById('endRow');
+                if (startRowInput && endRowInput) {
+                    startRowInput.value = data.start_row;
+                    endRowInput.value = data.end_row;
+                }
+                fetchStandings();
             }
-            fetchStandings();
-        }
+        });
 
         // Function to fetch standings
         async function fetchStandings() {
             console.log('Fetching standings...');
             try {
-                // First check if URL is set
-                const urlInput = document.getElementById('urlInput');
-                if (urlInput && !urlInput.value) {
-                    console.log('No URL set, skipping fetch');
-                    return;
-                }
-
                 const response = await fetch('/standings');
                 if (!response.ok) {
-                    if (response.status === 400) {
-                        console.log('No URL set for standings fetch');
-                        return;
-                    }
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
-                
                 const data = await response.json();
                 console.log('Standings fetched:', data);
-                
-                // Call the appropriate update function based on the page
-                const pageName = window.location.pathname.substring(1) || 'index';
-                switch(pageName) {
-                    case 'stream':
-                        updateStreamDisplay(data);
-                        break;
-                    case 'runaways':
-                        updateRunawaysDisplay(data);
-                        break;
-                    case 'index':
-                        updateManagementDisplay(data);
-                        break;
-                    default:
-                        if (typeof updateTeamDisplay === 'function') {
-                            updateTeamDisplay(data);
-                        }
-                }
+                updateDisplay(data);
             } catch (error) {
                 console.error('Error fetching standings:', error);
             }
         }
 
         // Initialize on page load
-        document.addEventListener('DOMContentLoaded', () => {
-            console.log('Page loaded, initializing...');
-            fetchStandings();
-        });
-
-        // Add this function to index.html
-        function updateManagementDisplay(data) {
-            console.log('Updating management display with data:', data);
-            
-            // Update status message
-            const statusDiv = document.getElementById('status');
-            if (statusDiv) {
-                statusDiv.textContent = `Standings updated: ${data.standings ? data.standings.length : 0} entries`;
-                statusDiv.className = 'status success';
-                statusDiv.style.display = 'block';
-                
-                setTimeout(() => {
-                    statusDiv.style.display = 'none';
-                }, 3000);
-            }
-            
-            // Update current row display if it exists
-            const currentRowsDiv = document.getElementById('currentRows');
-            if (currentRowsDiv) {
-                currentRowsDiv.textContent = `Currently showing rows ${current_start_row}-${current_end_row}`;
-            }
-        }
+        document.addEventListener('DOMContentLoaded', fetchStandings);
     </script>
 </head>
 <body>
