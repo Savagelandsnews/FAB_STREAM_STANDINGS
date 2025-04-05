@@ -220,22 +220,124 @@
     </style>
     <script src="https://js.pusher.com/8.0/pusher.min.js"></script>
     <script>
-        // Enable pusher logging - don't include this in production
-        Pusher.logToConsole = true;
-
+        // Initialize Pusher
         const pusher = new Pusher('c9fac3f836cd290ddf7d', {
             cluster: 'us3'
         });
 
+        // Subscribe to the channel
         const channel = pusher.subscribe('standings-channel');
+        
+        // Listen for all types of updates
         channel.bind('standings-update', function(data) {
             console.log('Received update:', data);
-            // Update the standings display
-            if (data.standings) {
-                updateStandings(data.standings);
+            if (data.type === 'url_update') {
+                // Update URL input field
+                document.getElementById('urlInput').value = data.url;
+                // Update status
+                updateStatus('URL updated successfully', 'success');
             }
-            if (data.round) {
-                updateRound(data.round);
+        });
+
+        channel.bind('row-update', function(data) {
+            console.log('Row update received:', data);
+            // Update row input fields
+            document.getElementById('startRow').value = data.start_row;
+            document.getElementById('endRow').value = data.end_row;
+            // Update status
+            updateStatus(`Rows updated: ${data.start_row}-${data.end_row}`, 'success');
+        });
+
+        // Function to update status messages
+        function updateStatus(message, type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+            statusDiv.style.display = 'block';
+            
+            // Hide status after 3 seconds
+            setTimeout(() => {
+                statusDiv.style.display = 'none';
+            }, 3000);
+        }
+
+        // Modified form submission for URL updates
+        document.getElementById('urlForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const url = document.getElementById('urlInput').value;
+            
+            try {
+                const response = await fetch('/update-url', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `url=${encodeURIComponent(url)}`
+                });
+                const data = await response.json();
+                
+                // Status will be updated by the Pusher event
+                // Check standings after URL update
+                checkStandings();
+                
+            } catch (error) {
+                updateStatus('Error updating URL', 'error');
+            }
+        });
+
+        // Modified function for row updates
+        function displayNextRows() {
+            const startRow = parseInt(document.getElementById('startRow').value) || 1;
+            const endRow = parseInt(document.getElementById('endRow').value) || 10;
+            
+            fetch('/update-rows', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `start_row=${startRow}&end_row=${endRow}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Status will be updated by the Pusher event
+                checkStandings();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                updateStatus('Error updating rows', 'error');
+            });
+        }
+
+        // Function to check standings
+        async function checkStandings() {
+            try {
+                const response = await fetch('/standings');
+                const data = await response.json();
+                
+                if (data.standings) {
+                    updateStatus(`Successfully fetched ${data.standings.length} standings entries`, 'success');
+                } else if (data.error) {
+                    updateStatus(`Error: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                console.error('Error checking standings:', error);
+                updateStatus('Error checking standings', 'error');
+            }
+        }
+
+        // Initial load
+        window.addEventListener('load', async () => {
+            try {
+                // Get current rows
+                const rowResponse = await fetch('/get-current-rows');
+                const rowData = await rowResponse.json();
+                document.getElementById('startRow').value = rowData.start_row;
+                document.getElementById('endRow').value = rowData.end_row;
+                
+                // Check standings
+                checkStandings();
+            } catch (error) {
+                console.error('Error during initial load:', error);
             }
         });
     </script>
