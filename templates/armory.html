@@ -115,13 +115,58 @@
         let currentRound = 1;
 
         function findPlayerMatch(scrapedName) {
-            scrapedName = scrapedName.trim();
+            scrapedName = scrapedName.trim().toUpperCase();
+            console.log(`Looking for match for: ${scrapedName}`);
+            
             for (const player of PLAYERS) {
-                if (player.scrapedNames.includes(scrapedName)) {
-                    console.log(`Found match: ${scrapedName} for ${player.name}`);
+                // Log all possible matches we're checking
+                console.log(`Checking against player: ${player.name}`);
+                console.log(`Player's scraped names: ${player.scrapedNames.join(', ')}`);
+
+                // Check if the scraped name matches any of the player's scraped names
+                if (player.scrapedNames.some(name => name.toUpperCase() === scrapedName)) {
+                    console.log(`Found exact match: ${scrapedName} for ${player.name}`);
+                    return player;
+                }
+
+                // Check if the scraped name contains the player's name
+                if (scrapedName.includes(player.name)) {
+                    console.log(`Found partial match: ${scrapedName} contains ${player.name}`);
+                    return player;
+                }
+
+                // Check if the player's name contains the scraped name
+                if (player.name.includes(scrapedName)) {
+                    console.log(`Found partial match: ${player.name} contains ${scrapedName}`);
+                    return player;
+                }
+
+                // Check if any scraped name contains the player's name
+                if (player.scrapedNames.some(name => name.toUpperCase().includes(player.name))) {
+                    console.log(`Found scraped name containing player name: ${player.name}`);
+                    return player;
+                }
+
+                // Check if player's name contains any scraped name
+                if (player.scrapedNames.some(name => player.name.includes(name.toUpperCase()))) {
+                    console.log(`Found player name containing scraped name: ${player.name}`);
+                    return player;
+                }
+
+                // Check for common name variations
+                const commonVariations = [
+                    player.name.replace(/\s+/g, ''), // Remove all spaces
+                    player.name.split(' ').map(n => n[0]).join(''), // Initials
+                    player.name.split(' ').slice(0, 1).join(' '), // First name only
+                    player.name.split(' ').slice(-1).join(' '), // Last name only
+                ];
+
+                if (commonVariations.some(variation => scrapedName.includes(variation))) {
+                    console.log(`Found common variation match: ${scrapedName} matches variation of ${player.name}`);
                     return player;
                 }
             }
+            console.log(`No match found for: ${scrapedName}`);
             return null;
         }
 
@@ -190,8 +235,11 @@
                 // Create a map to store player status and data
                 const playerStatusMap = new Map();
 
-                // Process all players from scraped data (active and dropped)
+                // Log all scraped players for debugging
                 const allPlayers = [...data.standings, ...(data.droppedPlayers || [])];
+                console.log('All scraped players:', allPlayers.map(p => p.player));
+
+                // Process all players from scraped data (active and dropped)
                 allPlayers.forEach(entry => {
                     const matchedPlayer = findPlayerMatch(entry.player);
                     if (matchedPlayer) {
@@ -217,6 +265,8 @@
                             record = `${wins}-${losses}`;
                         }
                         console.log(`Setting ${player.name}: ${record}`);
+                    } else {
+                        console.log(`No data found for ${player.name}`);
                     }
 
                     html += createPlayerEntry(player, record);
