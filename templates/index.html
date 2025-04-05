@@ -245,6 +245,27 @@
 
             // Initialize row controls
             initializeRowControls();
+
+            // Handle all update types
+            channel.bind('standings-update', function(data) {
+                console.log('Received standings update:', data);
+                
+                if (data.type === 'url_update') {
+                    console.log('URL updated:', data.url);
+                    // Update URL if we're on the management page
+                    const urlInput = document.getElementById('urlInput');
+                    if (urlInput) {
+                        urlInput.value = data.url;
+                    }
+                    // Don't fetch standings here - wait for the standings_update event
+                }
+                
+                if (data.type === 'standings_update') {
+                    console.log('Standings updated:', data.standings);
+                    // Update the standings display
+                    updateStandingsDisplay(data.standings);
+                }
+            });
         });
 
         // Function to initialize row controls
@@ -320,6 +341,23 @@
             } catch (error) {
                 console.error('Error checking standings:', error);
             }
+        }
+
+        // Function to update standings display
+        function updateStandingsDisplay(standings) {
+            if (!standings) return;
+            
+            console.log('Updating standings display');
+            
+            // If we're on the Runaways page
+            if (window.location.pathname === '/runaways') {
+                updateRunawaysDisplay(standings);
+            }
+            // If we're on the stream page
+            else if (window.location.pathname === '/stream') {
+                updateStreamDisplay(standings);
+            }
+            // Add other page-specific updates as needed
         }
     </script>
 </head>
