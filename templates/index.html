@@ -228,31 +228,18 @@
         });
 
         var channel = pusher.subscribe('standings-channel');
-        
-        // Handle URL updates
+        console.log('Subscribed to standings-channel');
+
+        // Listen for URL updates
         channel.bind('url-update', function(data) {
             console.log('URL update received:', data);
-            if (data.url) {
-                const urlInput = document.getElementById('urlInput');
-                if (urlInput) {
-                    urlInput.value = data.url;
-                }
-                fetchStandings();
-            }
+            fetchStandings();
         });
 
-        // Handle row updates
+        // Listen for row updates
         channel.bind('row-update', function(data) {
             console.log('Row update received:', data);
-            if (data.start_row && data.end_row) {
-                const startRowInput = document.getElementById('startRow');
-                const endRowInput = document.getElementById('endRow');
-                if (startRowInput && endRowInput) {
-                    startRowInput.value = data.start_row;
-                    endRowInput.value = data.end_row;
-                }
-                fetchStandings();
-            }
+            fetchStandings();
         });
 
         // Function to fetch standings
@@ -268,6 +255,22 @@
                 updateDisplay(data);
             } catch (error) {
                 console.error('Error fetching standings:', error);
+            }
+        }
+
+        // Function to update display
+        function updateDisplay(data) {
+            console.log('Updating display with data:', data);
+            // Update status message
+            const statusDiv = document.getElementById('status');
+            if (statusDiv) {
+                statusDiv.textContent = `Standings updated: ${data.standings ? data.standings.length : 0} entries`;
+                statusDiv.className = 'status success';
+                statusDiv.style.display = 'block';
+                
+                setTimeout(() => {
+                    statusDiv.style.display = 'none';
+                }, 3000);
             }
         }
 
