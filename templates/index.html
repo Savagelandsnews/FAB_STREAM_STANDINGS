@@ -305,7 +305,73 @@
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', () => {
             console.log('Page loaded, initializing...');
+            
+            // Fetch current row settings
+            fetch('/get-current-rows')
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Current row settings:', data);
+                    // Update input fields in index.html
+                    if (document.getElementById('startRow')) {
+                        document.getElementById('startRow').value = data.start_row;
+                        document.getElementById('endRow').value = data.end_row;
+                    }
+                    // Update display in stream.html
+                    if (window.location.pathname === '/stream') {
+                        fetchAndDisplayStandings(data.start_row, data.end_row);
+                    }
+                })
+                .catch(error => console.error('Error fetching current rows:', error));
+        });
+
+        function displayNextRows() {
+            console.log('Display Next Rows clicked');
+            const startRow = parseInt(document.getElementById('startRow').value) || 1;
+            const endRow = parseInt(document.getElementById('endRow').value) || 10;
+            
+            console.log(`Updating rows: ${startRow}-${endRow}`);
+            
+            fetch('/update-rows', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `start_row=${startRow}&end_row=${endRow}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Row update response:', data);
+                // Trigger immediate update through Pusher
+                pusher_client.trigger('standings-channel', 'row-update', {
+                    start_row: startRow,
+                    end_row: endRow,
+                    timestamp: new Date().getTime() // Add timestamp to ensure unique updates
+                });
+            })
+            .catch(error => {
+                console.error('Error updating rows:', error);
+            });
+        }
+
+        // Update the Pusher event listeners to handle row updates
+        channel.bind('row-update', function(data) {
+            console.log('Received row update:', data);
+            // Update row inputs
+            document.getElementById('startRow').value = data.start_row;
+            document.getElementById('endRow').value = data.end_row;
+            
+            // Trigger immediate standings refresh
             fetchStandings();
+            
+            // Show status message
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = `Displaying rows ${data.start_row}-${data.end_row}`;
+            statusDiv.className = 'status success';
+            statusDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                statusDiv.style.display = 'none';
+            }, 3000);
         });
     </script>
 </head>
@@ -494,28 +560,6 @@
                 statusDiv.className = 'status error';
                 statusDiv.style.display = 'block';
             }
-        }
-
-        function displayNextRows() {
-            const startRow = parseInt(document.getElementById('startRow').value) || 1;
-            const endRow = parseInt(document.getElementById('endRow').value) || 10;
-            
-            fetch('/update-rows', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: `start_row=${startRow}&end_row=${endRow}`
-            })
-            .then(response => response.json())
-            .then(data => {
-                // Trigger Pusher event to update all views
-                pusher_client.trigger('standings-channel', 'row-update', {
-                    start_row: startRow,
-                    end_row: endRow
-                });
-            })
-            .catch(error => console.error('Error:', error));
         }
     </script>
 </body>
