@@ -36,7 +36,6 @@
         .frame:nth-child(8) { top: 801px; }
         .frame:nth-child(9) { top: 890px; }
         .frame:nth-child(10) { top: 979px; }
-        .frame:nth-child(11) { top: 979px; }
 
         .player-name {
             position: absolute;
@@ -60,35 +59,29 @@
             align-items: center;
         }
 
-        .hero-image {
+        .flag {
             position: absolute;
-            width: 74px;
-            height: 74px;
-            left: 44px;
-            border-radius: 5px;
-            background-size: cover;
-            background-position: center;
+            width: 64px;
+            height: 64px;
+            left: 596px;
+            top: 7px;
+            filter: drop-shadow(0px 0px 4px rgba(0, 0, 0, 0.25));
+            object-fit: contain;
         }
 
-        .rank-number {
+        .player-score {
             position: absolute;
-            width: 74px;
-            height: 74px;
-            left: -89px;
-            background: #000000;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            width: 143px;
+            height: 67px;
+            left: 625px;
+            top: 7px;
             font-family: 'Bebas Neue';
             font-style: normal;
             font-weight: 400;
             font-size: 56px;
-            background: linear-gradient(180deg, #CBA655 0%, #F0EBB6 24.93%, #DBB45F 57.57%, #B08F49 118.71%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            text-fill-color: transparent;
+            line-height: 120%;
+            text-align: right;
+            color: #000000;
         }
 
         #standings-container {
@@ -107,7 +100,6 @@
             font-family: monospace;
             font-size: 12px;
             z-index: 1000;
-            display: none;
         }
 
         .round-title {
@@ -128,44 +120,81 @@
             background-clip: text;
             text-fill-color: transparent;
         }
+
+        .player-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .player-info {
+            display: flex;
+            align-items: center;
+            width: 100%;
+        }
+
+        .rank {
+            width: 50px;
+            text-align: center;
+            font-weight: bold;
+            color: #CBA655;
+        }
+
+        .player-name {
+            flex: 1;
+            margin: 0 20px;
+            color: white;
+        }
+
+        .hero {
+            width: 100px;
+            height: 100px;
+            margin-right: 20px;
+        }
+
+        .hero-image {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .wins {
+            width: 50px;
+            text-align: center;
+            color: #CBA655;
+            font-weight: bold;
+        }
+
+        #standings {
+            position: absolute;
+            width: 1920px;
+            height: 929px;
+            left: 0px;
+            top: 211px;
+            background: linear-gradient(180deg, rgba(0, 0, 0, 0) 12.65%, #000000 126%);
+            padding: 20px;
+            overflow-y: auto;
+        }
     </style>
 </head>
 <body>
-    <div id="standings-container">
+    <div id="round-title-container">
         <div class="round-title">STANDINGS ROUND <span id="roundNumber">1</span></div>
+    </div>
+    <div id="standings-container">
         <!-- Standings will be dynamically inserted here -->
     </div>
-    <div id="debug"></div>
+    <div id="debug" style="display: none;"></div>
 
     <script>
         const debug = document.getElementById('debug');
         
-        // Hero name to image mapping
-        const heroImages = {
-            'Kayo, Armed and Dangerous': 'Kayo',
-            'Dorinthea Ironsong': 'Dorinthea',
-            'Dromai, Ash Artist': 'Dromai',
-            'Kano, Dracai of Aether': 'Kano',
-            'Kassai of the Golden Sand': 'Kassai',
-            'Ser Boltyn, Breaker of Dawn': 'Boltyn',
-            'Rhinar, Reckless Rampage': 'Rhinar',
-            'Bravo, Showstopper': 'Bravo',
-            'Victor Goldmane, High and Mighty': 'Victor',
-            'Azalea, Ace in the Hole': 'Azalea',
-            'Dash, Inventor Extraordinaire': 'Dash',
-            'Levia, Shadowborn Abomination': 'Levia',
-            'Katsu, the Wanderer': 'Katsu',
-            'Prism, Awakener of Sol': 'Prism',
-            'Viserai, Rune Blood': 'Viserai',
-            'Uzuri, Switchblade': 'Uzuri',
-            'Teklovossen, Esteemed Magnate': 'Teklovossen',
-            'Fai, Rising Rebellion': 'Fai',
-            'Arakni, Huntsman': 'Arakni',
-            'Vynnset, Iron Maiden': 'Vynnset'
-        };
-
-        function getHeroImage(heroName) {
-            return heroImages[heroName] || 'default';
+        function showDebug(message) {
+            debug.textContent = message;
+            console.log(message);
         }
 
         function fitText(element) {
@@ -180,60 +209,96 @@
             }
         }
 
-        function createPlayerEntry(player, flag, wins, hero, index) {
-            const rank = index + 1;
+        // Hero name to image mapping
+        const heroImages = {
+            'Kayo, Armed and Dangerous': 'Kayo.jpg',
+            'Dorinthea Ironsong': 'Dorinthea.jpg',
+            'Dromai, Ash Artist': 'Dromai.jpg',
+            'Kano, Dracai of Aether': 'Kano.jpg',
+            'Kassai of the Golden Sand': 'Kassai.jpg',
+            'Ser Boltyn, Breaker of Dawn': 'Boltyn.jpg',
+            'Rhinar, Reckless Rampage': 'Rhinar.jpg',
+            'Bravo, Showstopper': 'Bravo.jpg',
+            'Victor Goldmane, High and Mighty': 'Victor.jpg',
+            'Azalea, Ace in the Hole': 'Azalea.jpg',
+            'Dash, Inventor Extraordinaire': 'Dash.jpg',
+            'Levia, Shadowborn Abomination': 'Levia.jpg',
+            'Katsu, the Wanderer': 'Katsu.jpg',
+            'Prism, Awakener of Sol': 'Prism.jpg',
+            'Viserai, Rune Blood': 'Viserai.jpg',
+            'Uzuri, Switchblade': 'Uzuri.jpg',
+            'Teklovossen, Esteemed Magnate': 'Teklovossen.jpg',
+            'Fai, Rising Rebellion': 'Fai.jpg',
+            'Arakni, Huntsman': 'Arakni.jpg',
+            'Vynnset, Iron Maiden': 'Vynnset.jpg'
+        };
+
+        function getHeroImage(heroName) {
+            return heroImages[heroName] || 'default.jpg';
+        }
+
+        function createPlayerEntry(player, flag, wins, index) {
+            // Convert wins to number to ensure proper calculation
+            const winCount = parseInt(wins);
+            // Get current round from the roundNumber span
+            const currentRound = parseInt(document.getElementById('roundNumber').textContent);
+            // Calculate losses (if wins equal current round, losses are 0)
+            const lossCount = winCount >= currentRound ? 0 : currentRound - winCount;
+            // Format the record as "W-L"
+            const record = `${winCount}-${lossCount}`;
+
             return `
                 <div class="frame">
-                    <div class="rank-number">${rank}</div>
-                    <div class="hero-image" style="background-image: url('/static/Heroes/${getHeroImage(hero)}.png')"></div>
                     <div class="player-name">${player}</div>
+                    ${flag ? `<img class="flag" 
+                         src="https://flagcdn.com/w80/${flag.toLowerCase()}.png"
+                         onerror="this.src='https://flagsapi.com/${flag}/flat/64.png'"
+                         alt="${flag} flag">` : ''}
+                    <div class="player-score">${record}</div>
                 </div>
             `;
         }
 
         async function updateStandings() {
+            showDebug('Fetching standings...');
+            
             try {
                 const response = await fetch('/standings');
                 if (!response.ok) {
-                    console.error(`Error (${response.status})`);
+                    const text = await response.text();
+                    showDebug(`Error (${response.status}): ${text}`);
                     return;
                 }
                 
                 const data = await response.json();
                 
                 if (data.error) {
-                    console.error('Error:', data.error);
+                    showDebug('Error: ' + data.error);
                     return;
                 }
                 
                 if (data.standings && data.standings.length > 0) {
                     const standingsContainer = document.getElementById('standings-container');
-                    const top10Standings = data.standings
-                        .sort((a, b) => a.position - b.position)
-                        .slice(0, 10);
-                    
-                    // Keep the round title and add the standings
-                    const roundTitle = standingsContainer.querySelector('.round-title');
-                    standingsContainer.innerHTML = '';
-                    standingsContainer.appendChild(roundTitle);
-                    
-                    top10Standings.forEach((entry, index) => {
-                        const playerEntry = createPlayerEntry(
+                    const top10Standings = data.standings.slice(0, 10);
+                    standingsContainer.innerHTML = top10Standings
+                        .map((entry, index) => createPlayerEntry(
                             entry.player,
                             entry.flag || 'US',
                             entry.wins,
-                            entry.hero || 'default',
                             index
-                        );
-                        standingsContainer.insertAdjacentHTML('beforeend', playerEntry);
-                    });
-                    
+                        ))
+                        .join('');
+
                     document.querySelectorAll('.player-name').forEach(nameElement => {
                         fitText(nameElement);
                     });
+                    
+                    showDebug(`Updated standings: showing top 10 of ${data.standings.length} entries`);
+                } else {
+                    showDebug('No standings data received');
                 }
             } catch (error) {
-                console.error('Error:', error);
+                showDebug('Error: ' + error.message);
             }
         }
 
@@ -258,15 +323,17 @@
                 const response = await fetch('/get-round');
                 const data = await response.json();
                 if (data.round) {
-                    const roundNumber = document.getElementById('roundNumber');
-                    roundNumber.textContent = data.round;
+                    const container = document.getElementById('round-title-container');
+                    container.innerHTML = `<div class="round-title">STANDINGS ROUND <span id="roundNumber">${data.round}</span></div>`;
+                    // Update standings to reflect new record with new round number
+                    await updateStandings();
                 }
             } catch (error) {
                 console.error('Error fetching round number:', error);
             }
         }
 
-        // Check round number every 5 seconds
+        // Check round number every 5 seconds along with standings
         setInterval(checkRound, 5000);
         // Initial round check
         checkRound();
