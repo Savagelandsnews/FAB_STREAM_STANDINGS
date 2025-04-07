@@ -44,6 +44,10 @@ CACHE_DURATION = 30  # seconds
 # Add to the global variables at the top
 current_round = 1
 
+# Add authentication credentials
+AUTH_USERNAME = "legendstory"
+AUTH_PASSWORD = "carpentry-evidence-unicycle"
+
 @app.get("/")
 async def read_root(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
@@ -99,7 +103,8 @@ async def get_standings(source: str = None):
     
     try:
         logger.info(f"Fetching standings from: {current_url}")
-        async with aiohttp.ClientSession() as session:
+        auth = aiohttp.BasicAuth(AUTH_USERNAME, AUTH_PASSWORD)
+        async with aiohttp.ClientSession(auth=auth) as session:
             async with session.get(current_url) as response:
                 if response.status != 200:
                     logger.error(f"Failed to fetch standings: HTTP {response.status}")
@@ -187,9 +192,10 @@ async def update_url(url: str = Form(...)):
     logger.info(f"Updating URL to: {url}")
     current_url = url
     
-    # Validate the URL works
+    # Validate the URL works with authentication
     try:
-        async with aiohttp.ClientSession() as session:
+        auth = aiohttp.BasicAuth(AUTH_USERNAME, AUTH_PASSWORD)
+        async with aiohttp.ClientSession(auth=auth) as session:
             async with session.get(url) as response:
                 if response.status != 200:
                     logger.error(f"URL validation failed with status {response.status}")
