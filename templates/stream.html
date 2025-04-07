@@ -36,6 +36,7 @@
         .frame:nth-child(8) { top: 801px; }
         .frame:nth-child(9) { top: 890px; }
         .frame:nth-child(10) { top: 979px; }
+        .frame:nth-child(11) { top: 979px; }
 
         .player-name {
             position: absolute;
@@ -207,25 +208,25 @@
                 
                 if (data.standings && data.standings.length > 0) {
                     const standingsContainer = document.getElementById('standings-container');
-                    const top10Standings = data.standings.slice(0, 10);
+                    const top10Standings = data.standings
+                        .sort((a, b) => a.position - b.position)
+                        .slice(0, 10);
                     
                     // Keep the round title and add the standings
                     const roundTitle = standingsContainer.querySelector('.round-title');
                     standingsContainer.innerHTML = '';
                     standingsContainer.appendChild(roundTitle);
                     
-                    const standingsHtml = top10Standings
-                        .sort((a, b) => a.position - b.position)
-                        .map((entry, index) => createPlayerEntry(
+                    top10Standings.forEach((entry, index) => {
+                        const playerEntry = createPlayerEntry(
                             entry.player,
                             entry.flag || 'US',
                             entry.wins,
                             entry.hero || 'default',
                             index
-                        ))
-                        .join('');
-                    
-                    standingsContainer.insertAdjacentHTML('beforeend', standingsHtml);
+                        );
+                        standingsContainer.insertAdjacentHTML('beforeend', playerEntry);
+                    });
                     
                     document.querySelectorAll('.player-name').forEach(nameElement => {
                         fitText(nameElement);
