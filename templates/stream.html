@@ -18,6 +18,45 @@
             overflow: hidden;
         }
 
+        /* Player container */
+        #standings-container {
+            position: relative;
+            width: 1920px;
+            height: 1080px;
+        }
+
+        /* Background gradient overlay */
+        .gradient-overlay {
+            position: absolute;
+            width: 1920px;
+            height: 929px;
+            left: 0px;
+            top: 211px;
+            background: linear-gradient(180deg, rgba(0, 0, 0, 0) 12.65%, #000000 126%);
+        }
+
+        /* Top black bar */
+        .top-bar {
+            position: absolute;
+            width: 1920px;
+            height: 170.7px;
+            left: 0px;
+            top: -28px;
+            background: #000000;
+            filter: drop-shadow(0px 18px 15.4px rgba(0, 0, 0, 0.75));
+        }
+
+        /* Gold separator line */
+        .gold-separator {
+            position: absolute;
+            width: 1920px;
+            height: 9.48px;
+            left: 0px;
+            top: 141.52px;
+            background: linear-gradient(90deg, #FCC15C 0%, #F5BC57 47.5%, #CFA23D 100%);
+        }
+
+        /* Frame styling */
         .frame {
             position: absolute;
             width: 788px;
@@ -39,6 +78,41 @@
         .frame:nth-child(9) { top: 890px; }
         .frame:nth-child(10) { top: 979px; }
 
+        /* Frame background */
+        .frame-background {
+            position: absolute;
+            width: 1698px;
+            height: 74px;
+            left: 0px;
+            top: 0px;
+            background: linear-gradient(180deg, #CBA655 0%, #F0EBB6 24.93%, #DBB45F 57.57%, #B08F49 118.71%);
+            border-radius: 10px;
+        }
+
+        /* Frame content */
+        .frame-content {
+            position: absolute;
+            width: 660px;
+            height: 74px;
+            left: 0px;
+            top: 0px;
+            background: #000000;
+            box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+        }
+
+        /* Hero image */
+        .hero-image {
+            position: absolute;
+            width: 124px;
+            height: 558px;
+            left: 0px;
+            top: -36px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+
+        /* Rank number */
         .rank-number {
             position: absolute;
             width: 74px;
@@ -68,6 +142,7 @@
             text-fill-color: transparent;
         }
 
+        /* Player name */
         .player-name {
             position: absolute;
             width: 387px;
@@ -90,65 +165,12 @@
             align-items: center;
         }
 
-        .hero-image {
-            position: absolute;
-            width: 124px;
-            height: 558px;
-            left: 0px;
-            top: -36px;
-            background-size: contain;
-            background-repeat: no-repeat;
-            background-position: center;
-        }
-
-        .flag {
-            position: absolute;
-            width: 64px;
-            height: 64px;
-            left: 596px;
-            top: 7px;
-            filter: drop-shadow(0px 0px 4px rgba(0, 0, 0, 0.25));
-            object-fit: contain;
-        }
-
-        .player-score {
-            position: absolute;
-            width: 143px;
-            height: 67px;
-            left: 625px;
-            top: 7px;
-            font-family: 'Bebas Neue';
-            font-style: normal;
-            font-weight: 400;
-            font-size: 56px;
-            line-height: 120%;
-            text-align: right;
-            color: #000000;
-        }
-
-        #standings-container {
-            position: relative;
-            width: 1920px;
-            height: 1080px;
-        }
-
-        #debug {
-            position: fixed;
-            bottom: 10px;
-            right: 10px;
-            background: rgba(0, 0, 0, 0.7);
-            color: #00aa00;
-            padding: 5px;
-            font-family: monospace;
-            font-size: 12px;
-            z-index: 1000;
-        }
-
+        /* Round title */
         .round-title {
             position: absolute;
-            width: 700px;
+            width: 583px;
             height: 115px;
-            left: 610px;
+            left: 671px;
             top: 19px;
             font-family: 'Bebas Neue';
             font-style: normal;
@@ -163,32 +185,28 @@
             text-fill-color: transparent;
         }
 
-        .frame-background {
-            position: absolute;
-            width: 1698px;
-            height: 74px;
-            left: 0px;
-            top: 0px;
-            background: linear-gradient(180deg, #CBA655 0%, #F0EBB6 24.93%, #DBB45F 57.57%, #B08F49 118.71%);
-            border-radius: 10px;
-        }
-
-        .frame-content {
-            position: absolute;
-            width: 660px;
-            height: 74px;
-            left: 0px;
-            top: 0px;
-            background: #000000;
-            box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+        /* Debug info */
+        #debug {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            color: #00aa00;
+            padding: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            z-index: 1000;
         }
     </style>
 </head>
 <body>
-    <div id="round-title-container">
-        <div class="round-title">STANDINGS ROUND <span id="roundNumber">1</span></div>
-    </div>
     <div id="standings-container">
+        <div class="gradient-overlay"></div>
+        <div class="top-bar"></div>
+        <div class="gold-separator"></div>
+        <div id="round-title-container">
+            <div class="round-title">STANDINGS ROUND <span id="roundNumber">1</span></div>
+        </div>
         <!-- Standings will be dynamically inserted here -->
     </div>
     <div id="debug" style="display: none;"></div>
