@@ -18,19 +18,11 @@
             overflow: hidden;
         }
 
-        #standings-container {
-            position: relative;
-            width: 1920px;
-            height: 1080px;
-        }
-
         .frame {
             position: absolute;
             width: 788px;
             height: 74px;
-            left: 610px;
-            display: flex;
-            align-items: center;
+            left: 566px;
         }
 
         /* Frame positions */
@@ -45,24 +37,36 @@
         .frame:nth-child(9) { top: 890px; }
         .frame:nth-child(10) { top: 979px; }
 
-        .player-bar {
+        .player-name {
             position: absolute;
-            width: 788px;
-            height: 74px;
-            left: 0;
-            background: #000000;
-            border-radius: 10px;
+            width: 387px;
+            height: 67px;
+            left: 144px;
+            top: 7px;
+            font-family: 'Bebas Neue';
+            font-style: normal;
+            font-weight: 400;
+            font-size: 56px;
+            line-height: 120%;
+            background: linear-gradient(180deg, #CBA655 0%, #F0EBB6 24.93%, #DBB45F 57.57%, #B08F49 118.71%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-fill-color: transparent;
+            white-space: nowrap;
+            overflow: hidden;
             display: flex;
             align-items: center;
         }
 
-        .gold-end {
+        .hero-image {
             position: absolute;
-            width: 200px;
+            width: 74px;
             height: 74px;
-            right: 0;
-            background: linear-gradient(90deg, rgba(203, 166, 85, 0) 0%, #CBA655 100%);
-            border-radius: 0 10px 10px 0;
+            left: 44px;
+            border-radius: 5px;
+            background-size: cover;
+            background-position: center;
         }
 
         .rank-number {
@@ -79,33 +83,37 @@
             font-style: normal;
             font-weight: 400;
             font-size: 56px;
-            color: #CBA655;
+            background: linear-gradient(180deg, #CBA655 0%, #F0EBB6 24.93%, #DBB45F 57.57%, #B08F49 118.71%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-fill-color: transparent;
         }
 
-        .hero-image {
-            width: 74px;
-            height: 74px;
-            margin-left: 15px;
-            border-radius: 5px;
-            background-size: cover;
-            background-position: center;
+        #standings-container {
+            position: relative;
+            width: 1920px;
+            height: 1080px;
         }
 
-        .player-name {
-            margin-left: 20px;
-            font-family: 'Bebas Neue';
-            font-style: normal;
-            font-weight: 400;
-            font-size: 56px;
-            color: #CBA655;
-            flex-grow: 1;
+        #debug {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            color: #00aa00;
+            padding: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            z-index: 1000;
+            display: none;
         }
 
         .round-title {
             position: absolute;
-            width: 583px;
+            width: 700px;
             height: 115px;
-            left: 671px;
+            left: 610px;
             top: 19px;
             font-family: 'Bebas Neue';
             font-style: normal;
@@ -113,11 +121,11 @@
             font-size: 96px;
             line-height: 120%;
             text-align: center;
-            color: #CBA655;
-        }
-
-        #debug {
-            display: none;
+            background: linear-gradient(180deg, #CBA655 0%, #F0EBB6 24.93%, #DBB45F 57.57%, #B08F49 118.71%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-fill-color: transparent;
         }
     </style>
 </head>
@@ -131,16 +139,53 @@
     <script>
         const debug = document.getElementById('debug');
         
+        // Hero name to image mapping
+        const heroImages = {
+            'Kayo, Armed and Dangerous': 'Kayo',
+            'Dorinthea Ironsong': 'Dorinthea',
+            'Dromai, Ash Artist': 'Dromai',
+            'Kano, Dracai of Aether': 'Kano',
+            'Kassai of the Golden Sand': 'Kassai',
+            'Ser Boltyn, Breaker of Dawn': 'Boltyn',
+            'Rhinar, Reckless Rampage': 'Rhinar',
+            'Bravo, Showstopper': 'Bravo',
+            'Victor Goldmane, High and Mighty': 'Victor',
+            'Azalea, Ace in the Hole': 'Azalea',
+            'Dash, Inventor Extraordinaire': 'Dash',
+            'Levia, Shadowborn Abomination': 'Levia',
+            'Katsu, the Wanderer': 'Katsu',
+            'Prism, Awakener of Sol': 'Prism',
+            'Viserai, Rune Blood': 'Viserai',
+            'Uzuri, Switchblade': 'Uzuri',
+            'Teklovossen, Esteemed Magnate': 'Teklovossen',
+            'Fai, Rising Rebellion': 'Fai',
+            'Arakni, Huntsman': 'Arakni',
+            'Vynnset, Iron Maiden': 'Vynnset'
+        };
+
+        function getHeroImage(heroName) {
+            return heroImages[heroName] || 'default';
+        }
+
+        function fitText(element) {
+            const maxWidth = 387;
+            const originalFontSize = 56;
+            
+            element.style.fontSize = originalFontSize + 'px';
+            
+            while (element.scrollWidth > maxWidth && parseFloat(element.style.fontSize) > 20) {
+                const currentSize = parseFloat(element.style.fontSize);
+                element.style.fontSize = (currentSize - 1) + 'px';
+            }
+        }
+
         function createPlayerEntry(player, flag, wins, hero, index) {
             const rank = index + 1;
             return `
                 <div class="frame">
                     <div class="rank-number">${rank}</div>
-                    <div class="player-bar">
-                        <div class="hero-image" style="background-image: url('/static/Heroes/${hero}.png')"></div>
-                        <div class="player-name">${player}</div>
-                        <div class="gold-end"></div>
-                    </div>
+                    <div class="hero-image" style="background-image: url('/static/Heroes/${getHeroImage(hero)}.png')"></div>
+                    <div class="player-name">${player}</div>
                 </div>
             `;
         }
@@ -170,6 +215,7 @@
                     standingsContainer.appendChild(roundTitle);
                     
                     const standingsHtml = top10Standings
+                        .sort((a, b) => a.position - b.position)
                         .map((entry, index) => createPlayerEntry(
                             entry.player,
                             entry.flag || 'US',
@@ -180,6 +226,10 @@
                         .join('');
                     
                     standingsContainer.insertAdjacentHTML('beforeend', standingsHtml);
+                    
+                    document.querySelectorAll('.player-name').forEach(nameElement => {
+                        fitText(nameElement);
+                    });
                 }
             } catch (error) {
                 console.error('Error:', error);
@@ -191,6 +241,15 @@
 
         // Update every 5 seconds
         setInterval(updateStandings, 5000);
+
+        // Add resize observer to handle window size changes
+        const resizeObserver = new ResizeObserver(entries => {
+            document.querySelectorAll('.player-name').forEach(nameElement => {
+                fitText(nameElement);
+            });
+        });
+
+        resizeObserver.observe(document.body);
 
         // Function to update round number
         async function checkRound() {
