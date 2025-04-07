@@ -22,7 +22,9 @@
             position: absolute;
             width: 788px;
             height: 74px;
-            left: 566px;
+            left: 610px;
+            filter: drop-shadow(0px 6.20061px 31.003px rgba(0, 0, 0, 0.8));
+            border-radius: 10px;
         }
 
         /* Frame positions */
@@ -36,6 +38,35 @@
         .frame:nth-child(8) { top: 801px; }
         .frame:nth-child(9) { top: 890px; }
         .frame:nth-child(10) { top: 979px; }
+
+        .rank-number {
+            position: absolute;
+            width: 74px;
+            height: 74px;
+            left: 521px;
+            top: 0;
+            filter: drop-shadow(0px 6.20061px 31.003px rgba(0, 0, 0, 0.8));
+            border-radius: 10px;
+            background: #000000;
+            box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .rank-number span {
+            font-family: 'Bebas Neue';
+            font-style: normal;
+            font-weight: 400;
+            font-size: 56px;
+            line-height: 120%;
+            text-align: center;
+            background: linear-gradient(180deg, #CBA655 0%, #F0EBB6 24.93%, #DBB45F 57.57%, #B08F49 118.71%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-fill-color: transparent;
+        }
 
         .player-name {
             position: absolute;
@@ -57,6 +88,17 @@
             overflow: hidden;
             display: flex;
             align-items: center;
+        }
+
+        .hero-image {
+            position: absolute;
+            width: 124px;
+            height: 558px;
+            left: 0px;
+            top: -36px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
         }
 
         .flag {
@@ -120,6 +162,26 @@
             background-clip: text;
             text-fill-color: transparent;
         }
+
+        .frame-background {
+            position: absolute;
+            width: 1698px;
+            height: 74px;
+            left: 0px;
+            top: 0px;
+            background: linear-gradient(180deg, #CBA655 0%, #F0EBB6 24.93%, #DBB45F 57.57%, #B08F49 118.71%);
+            border-radius: 10px;
+        }
+
+        .frame-content {
+            position: absolute;
+            width: 660px;
+            height: 74px;
+            left: 0px;
+            top: 0px;
+            background: #000000;
+            box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+        }
     </style>
 </head>
 <body>
@@ -134,6 +196,34 @@
     <script>
         const debug = document.getElementById('debug');
         
+        // Hero name to image mapping
+        const heroImageMap = {
+            'Kayo, Armed and Dangerous': 'Kayo',
+            'Dorinthea Ironsong': 'Dorinthea',
+            'Dromai, Ash Artist': 'Dromai',
+            'Kano, Dracai of Aether': 'Kano',
+            'Kassai of the Golden Sand': 'Kassai',
+            'Ser Boltyn, Breaker of Dawn': 'Boltyn',
+            'Rhinar, Reckless Rampage': 'Rhinar',
+            'Bravo, Showstopper': 'Bravo',
+            'Victor Goldmane, High and Mighty': 'Victor',
+            'Azalea, Ace in the Hole': 'Azalea',
+            'Dash, Inventor Extraordinaire': 'Dash',
+            'Katsu, the Wanderer': 'Katsu',
+            'Levia, Shadowborn Abomination': 'Levia',
+            'Prism, Awakener of Sol': 'Prism',
+            'Viserai, Rune Blood': 'Viserai',
+            'Uzuri, Switchblade': 'Uzuri',
+            'Teklovossen, Esteemed Magnate': 'Teklovossen',
+            'Arakni, Huntsman': 'Arakni Huntsman',
+            'Dash I/O': 'Dash_IO'
+        };
+
+        function getHeroImage(heroName) {
+            const mappedName = heroImageMap[heroName] || 'default';
+            return `/static/Heroes/${mappedName}.png`;
+        }
+
         function showDebug(message) {
             debug.textContent = message;
             console.log(message);
@@ -151,7 +241,7 @@
             }
         }
 
-        function createPlayerEntry(player, flag, wins, index) {
+        function createPlayerEntry(player, flag, wins, hero, index) {
             // Convert wins to number to ensure proper calculation
             const winCount = parseInt(wins);
             // Get current round from the roundNumber span
@@ -160,9 +250,15 @@
             const lossCount = winCount >= currentRound ? 0 : currentRound - winCount;
             // Format the record as "W-L"
             const record = `${winCount}-${lossCount}`;
+            // Get rank number (1-based index)
+            const rank = index + 1;
 
             return `
                 <div class="frame">
+                    <div class="frame-background"></div>
+                    <div class="frame-content"></div>
+                    <div class="hero-image" style="background-image: url('${getHeroImage(hero)}')"></div>
+                    <div class="rank-number"><span>${rank}</span></div>
                     <div class="player-name">${player}</div>
                     ${flag ? `<img class="flag" 
                          src="https://flagcdn.com/w80/${flag.toLowerCase()}.png"
@@ -199,6 +295,7 @@
                             entry.player,
                             entry.flag || 'US',
                             entry.wins,
+                            entry.hero || 'default',
                             index
                         ))
                         .join('');

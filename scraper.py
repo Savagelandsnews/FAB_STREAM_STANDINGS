@@ -130,7 +130,7 @@ async def get_standings(source: str = None):
             if len(cols) >= 3:
                 rank = cols[0].text.strip()
                 player_cell = cols[1]
-                wins = cols[2].text.strip()
+                wins = cols[4].text.strip()  # Wins is now in the 5th column
                 
                 # Skip empty rows
                 if not player_cell.text.strip() or not wins:
@@ -149,7 +149,8 @@ async def get_standings(source: str = None):
                     'player': player_cell.text.strip(),
                     'wins': wins,
                     'flag': flag,
-                    'isDropped': rank == 'Dropped'
+                    'isDropped': rank == 'Dropped',
+                    'hero': cols[2].text.strip()  # Hero is in the 3rd column
                 }
                 
                 if rank == 'Dropped':
