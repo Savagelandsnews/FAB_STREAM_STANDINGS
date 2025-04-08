@@ -266,9 +266,13 @@
             // Format the record as "W-L"
             const record = `${winCount}-${lossCount}`;
 
+            // Adjust rank number width based on number of digits
+            const rankWidth = rank >= 10 ? '45px' : '23px';
+            const rankLeft = rank >= 10 ? '14px' : '25px';
+
             return `
                 <div class="frame">
-                    <div class="rank-number">${rank}</div>
+                    <div class="rank-number" style="width: ${rankWidth}; left: ${rankLeft};">${rank}</div>
                     <div class="player-name">${player}</div>
                     ${flag ? `<img class="flag" 
                          src="https://flagcdn.com/w80/${flag.toLowerCase()}.png"
@@ -301,11 +305,11 @@
                     const standingsContainer = document.getElementById('standings-container');
                     const top10Standings = data.standings.slice(0, 10);
                     standingsContainer.innerHTML = top10Standings
-                        .map((entry, index) => createPlayerEntry(
+                        .map((entry) => createPlayerEntry(
                             entry.player,
                             entry.flag || 'US',
                             entry.wins,
-                            entry.rank || (index + 1)
+                            entry.position || entry.rank || 0
                         ))
                         .join('');
 
