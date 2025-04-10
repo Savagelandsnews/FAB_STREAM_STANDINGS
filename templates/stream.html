@@ -268,21 +268,41 @@
             // Format the record as "W-L"
             const record = `${winCount}-${lossCount}`;
 
-            // Adjust rank number width based on number of digits
-            const rankWidth = rank >= 10 ? '45px' : '23px';
-            const rankLeft = rank >= 10 ? '14px' : '25px';
+            // Create the frame element
+            const frame = document.createElement('div');
+            frame.className = 'frame';
 
-            return `
-                <div class="frame">
-                    <div class="rank-number" style="width: ${rankWidth}; left: ${rankLeft};">${rank}</div>
-                    <div class="player-name">${player}</div>
-                    ${flag ? `<img class="flag" 
-                         src="https://flagcdn.com/w80/${flag.toLowerCase()}.png"
-                         onerror="this.src='https://flagsapi.com/${flag}/flat/64.png'"
-                         alt="${flag} flag">` : ''}
-                    <div class="player-score">${record}</div>
-                </div>
-            `;
+            // Create rank number element
+            const rankElement = document.createElement('div');
+            rankElement.className = 'rank-number';
+            rankElement.textContent = rank;
+
+            // Create player name element
+            const nameElement = document.createElement('div');
+            nameElement.className = 'player-name';
+            nameElement.textContent = player;
+
+            // Create flag element
+            const flagElement = document.createElement('img');
+            flagElement.className = 'flag';
+            flagElement.src = `https://flagcdn.com/w80/${flag.toLowerCase()}.png`;
+            flagElement.onerror = function() {
+                this.src = `https://flagsapi.com/${flag}/flat/64.png`;
+            };
+            flagElement.alt = `${flag} flag`;
+
+            // Create score element
+            const scoreElement = document.createElement('div');
+            scoreElement.className = 'player-score';
+            scoreElement.textContent = record;
+
+            // Append all elements to the frame
+            frame.appendChild(rankElement);
+            frame.appendChild(nameElement);
+            frame.appendChild(flagElement);
+            frame.appendChild(scoreElement);
+
+            return frame;
         }
 
         async function updateStandings() {
@@ -312,15 +332,13 @@
                     
                     // Add each player entry
                     top10Standings.forEach((entry, index) => {
-                        const frame = document.createElement('div');
-                        frame.className = 'frame';
-                        frame.innerHTML = createPlayerEntry(
+                        const playerEntry = createPlayerEntry(
                             entry.player,
                             entry.flag || 'US',
                             entry.wins,
                             index + 1
                         );
-                        standingsContainer.appendChild(frame);
+                        standingsContainer.appendChild(playerEntry);
                     });
 
                     document.querySelectorAll('.player-name').forEach(nameElement => {
