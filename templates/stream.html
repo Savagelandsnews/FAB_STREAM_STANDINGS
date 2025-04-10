@@ -304,7 +304,7 @@
                 }
                 
                 if (data.standings && data.standings.length > 0) {
-                    const standingsContainer = document.getElementById('standings');
+                    const standingsContainer = document.getElementById('standings-container');
                     const top10Standings = data.standings.slice(0, 10);
                     standingsContainer.innerHTML = top10Standings
                         .map((entry) => createPlayerEntry(
