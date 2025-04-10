@@ -59,6 +59,16 @@
             height: 74px;
         }
 
+        /* Hero image */
+        .hero-image {
+            position: absolute;
+            width: 124px;
+            height: 558px;
+            left: 0px;
+            top: -36px;
+            object-fit: contain;
+        }
+
         /* Main frame (right side) */
         .main-frame {
             position: absolute;
@@ -310,33 +320,51 @@
 
         // Hero name to image mapping
         const heroImages = {
-            'Kayo, Armed and Dangerous': 'Kayo.jpg',
-            'Dorinthea Ironsong': 'Dorinthea.jpg',
-            'Dromai, Ash Artist': 'Dromai.jpg',
-            'Kano, Dracai of Aether': 'Kano.jpg',
-            'Kassai of the Golden Sand': 'Kassai.jpg',
-            'Ser Boltyn, Breaker of Dawn': 'Boltyn.jpg',
-            'Rhinar, Reckless Rampage': 'Rhinar.jpg',
-            'Bravo, Showstopper': 'Bravo.jpg',
-            'Victor Goldmane, High and Mighty': 'Victor.jpg',
-            'Azalea, Ace in the Hole': 'Azalea.jpg',
-            'Dash, Inventor Extraordinaire': 'Dash.jpg',
-            'Levia, Shadowborn Abomination': 'Levia.jpg',
-            'Katsu, the Wanderer': 'Katsu.jpg',
-            'Prism, Awakener of Sol': 'Prism.jpg',
-            'Viserai, Rune Blood': 'Viserai.jpg',
-            'Uzuri, Switchblade': 'Uzuri.jpg',
-            'Teklovossen, Esteemed Magnate': 'Teklovossen.jpg',
-            'Fai, Rising Rebellion': 'Fai.jpg',
-            'Arakni, Huntsman': 'Arakni.jpg',
-            'Vynnset, Iron Maiden': 'Vynnset.jpg'
+            'Kayo, Armed and Dangerous': 'Kayo.png',
+            'Dorinthea Ironsong': 'Dori.png',
+            'Dromai, Ash Artist': '???', // Not found in folder
+            'Kano, Dracai of Aether': 'Kano.png',
+            'Kassai of the Golden Sand': 'Kassai.png',
+            'Ser Boltyn, Breaker of Dawn': 'Boltyn.png',
+            'Rhinar, Reckless Rampage': 'Rhinar.png',
+            'Bravo, Showstopper': 'Bravo.png',
+            'Victor Goldmane, High and Mighty': 'Victor.png',
+            'Azalea, Ace in the Hole': 'Azalea.png',
+            'Dash, Inventor Extraordinaire': 'Dash.png',
+            'Levia, Shadowborn Abomination': 'Levia.png',
+            'Katsu, the Wanderer': 'Katsu.png',
+            'Prism, Awakener of Sol': 'Prism.png',
+            'Viserai, Rune Blood': '???', // Not found in folder
+            'Uzuri, Switchblade': 'Uzuri.png',
+            'Teklovossen, Esteemed Magnate': 'Teklo.png',
+            'Fai, Rising Rebellion': 'Fai.png',
+            'Arakni, Huntsman': 'Arakni Huntsman.png',
+            'Vynnset, Iron Maiden': 'Vynnset.png',
+            // Additional heroes found in folder
+            'Arakni, Slipped Through the Cracks': 'arakni slipped thru the cracks.png',
+            'Olympia, the Defender': 'Olympia.png',
+            'Oscilio, the Mastermind': 'Oscilio.png',
+            'Riptide, Lurker of the Deep': 'Riptide.png',
+            'Florian, the Fencer': 'Florian.png',
+            'Ira, Crimson Haze': 'Ira.png',
+            'Jarl, the Iron Fist': 'Jarl.png',
+            'Enigma, the Mastermind': 'Enigma.png',
+            'Fang, the Master of Shadows': 'Fang.png',
+            'Cindra, the Blaze': 'Cindra.png',
+            'Dash, Inventor Extraordinaire (IO)': 'Dash_IO.png',
+            'Betsy, the Gambler': 'Betsy.png',
+            'Aurora, the Radiant': 'Aurora.png',
+            'Maxx, the Gambler': 'Maxx.png',
+            'Nuu, the Master of Shadows': 'Nuu.png',
+            'Zen, the Master of Shadows': 'Zen.png',
+            'Verdance, the Radiant': 'Verdance.png'
         };
 
         function getHeroImage(heroName) {
             return heroImages[heroName] || 'default.jpg';
         }
 
-        function createPlayerEntry(player, flag, wins, rank) {
+        function createPlayerEntry(player, hero, wins, rank) {
             // Convert wins to number to ensure proper calculation
             const winCount = parseInt(wins);
             // Get current round from the roundNumber span
@@ -349,6 +377,13 @@
             // Create the player row container
             const row = document.createElement('div');
             row.className = 'player-row';
+
+            // Create hero image
+            const heroImage = document.createElement('img');
+            heroImage.className = 'hero-image';
+            heroImage.src = `/static/Heroes/${getHeroImage(hero)}`;
+            heroImage.alt = hero;
+            row.appendChild(heroImage);
 
             // Create the rank frame
             const rankFrame = document.createElement('div');
@@ -412,7 +447,7 @@
                     top10Standings.forEach((entry, index) => {
                         const playerEntry = createPlayerEntry(
                             entry.player,
-                            entry.flag || 'US',
+                            entry.hero,
                             entry.wins,
                             index + 1
                         );
