@@ -143,12 +143,10 @@
         }
 
         .player-row {
-            display: flex;
-            align-items: center;
-            margin-bottom: 10px;
-            background: rgba(0, 0, 0, 0.7);
-            padding: 10px;
-            border-radius: 5px;
+            position: relative;
+            width: 100%;
+            height: 74px;
+            margin-bottom: 89px;
         }
 
         .player-info {
@@ -290,6 +288,10 @@
             // Format the record as "W-L"
             const record = `${winCount}-${lossCount}`;
 
+            // Create the player row container
+            const row = document.createElement('div');
+            row.className = 'player-row';
+
             // Create the rank frame
             const rankFrame = document.createElement('div');
             rankFrame.className = 'rank-frame';
@@ -328,12 +330,11 @@
             frame.appendChild(flagElement);
             frame.appendChild(scoreElement);
 
-            // Create container for both frames
-            const container = document.createElement('div');
-            container.appendChild(rankFrame);
-            container.appendChild(frame);
+            // Append both frames to the row
+            row.appendChild(rankFrame);
+            row.appendChild(frame);
 
-            return container;
+            return row;
         }
 
         async function updateStandings() {
