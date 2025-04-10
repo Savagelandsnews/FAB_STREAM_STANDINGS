@@ -18,7 +18,49 @@
             overflow: hidden;
         }
 
-        .frame {
+        #standings-container {
+            position: relative;
+            width: 1920px;
+            height: 1080px;
+        }
+
+        /* Header section */
+        .header {
+            position: absolute;
+            width: 1920px;
+            height: 179px;
+            left: 0px;
+            top: -28px;
+            filter: drop-shadow(0px 18px 15.4px rgba(0, 0, 0, 0.75));
+        }
+
+        .header-bg {
+            position: absolute;
+            width: 1920px;
+            height: 170.7px;
+            left: 0px;
+            top: -28px;
+            background: #000000;
+        }
+
+        .header-border {
+            position: absolute;
+            width: 1920px;
+            height: 9.48px;
+            left: 0px;
+            top: 141.52px;
+            background: linear-gradient(90deg, #FCC15C 0%, #F5BC57 47.5%, #CFA23D 100%);
+        }
+
+        /* Player rows */
+        .player-row {
+            position: absolute;
+            width: 1920px;
+            height: 74px;
+        }
+
+        /* Main frame (right side) */
+        .main-frame {
             position: absolute;
             width: 788px;
             height: 74px;
@@ -27,18 +69,59 @@
             border-radius: 10px;
         }
 
-        /* Frame positions */
-        .frame:nth-child(1) { top: 178px; }
-        .frame:nth-child(2) { top: 267px; }
-        .frame:nth-child(3) { top: 356px; }
-        .frame:nth-child(4) { top: 445px; }
-        .frame:nth-child(5) { top: 534px; }
-        .frame:nth-child(6) { top: 623px; }
-        .frame:nth-child(7) { top: 712px; }
-        .frame:nth-child(8) { top: 801px; }
-        .frame:nth-child(9) { top: 890px; }
-        .frame:nth-child(10) { top: 979px; }
+        .main-frame-bg {
+            position: absolute;
+            width: 1698px;
+            height: 74px;
+            left: 0px;
+            top: 0px;
+            background: linear-gradient(180deg, #CBA655 0%, #F0EBB6 24.93%, #DBB45F 57.57%, #B08F49 118.71%);
+            border-radius: 10px;
+        }
 
+        .main-frame-overlay {
+            position: absolute;
+            width: 660px;
+            height: 74px;
+            left: 0px;
+            top: 0px;
+            background: #000000;
+            box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+        }
+
+        /* Rank frame (left side) */
+        .rank-frame {
+            position: absolute;
+            width: 74px;
+            height: 74px;
+            left: 521px;
+            filter: drop-shadow(0px 6.20061px 31.003px rgba(0, 0, 0, 0.8));
+            border-radius: 10px;
+        }
+
+        .rank-frame-bg {
+            position: absolute;
+            width: 660px;
+            height: 74px;
+            left: 0px;
+            top: 0px;
+            background: #000000;
+            box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+        }
+
+        /* Row positions */
+        .player-row:nth-child(1) { top: 178px; }
+        .player-row:nth-child(2) { top: 267px; }
+        .player-row:nth-child(3) { top: 356px; }
+        .player-row:nth-child(4) { top: 445px; }
+        .player-row:nth-child(5) { top: 534px; }
+        .player-row:nth-child(6) { top: 623px; }
+        .player-row:nth-child(7) { top: 712px; }
+        .player-row:nth-child(8) { top: 801px; }
+        .player-row:nth-child(9) { top: 890px; }
+        .player-row:nth-child(10) { top: 979px; }
+
+        /* Text elements */
         .rank-number {
             position: absolute;
             width: 45px;
@@ -105,10 +188,14 @@
             color: #000000;
         }
 
-        #standings-container {
-            position: relative;
+        /* Gradient overlay */
+        .gradient-overlay {
+            position: absolute;
             width: 1920px;
-            height: 1080px;
+            height: 929px;
+            left: 0px;
+            top: 211px;
+            background: linear-gradient(180deg, rgba(0, 0, 0, 0) 12.65%, #000000 126%);
         }
 
         #debug {
@@ -140,13 +227,6 @@
             -webkit-text-fill-color: transparent;
             background-clip: text;
             text-fill-color: transparent;
-        }
-
-        .player-row {
-            position: relative;
-            width: 100%;
-            height: 74px;
-            margin-bottom: 89px;
         }
 
         .player-info {
@@ -197,28 +277,6 @@
             padding: 20px;
             overflow-y: auto;
         }
-
-        /* Add new rank frame styles */
-        .rank-frame {
-            position: absolute;
-            width: 74px;
-            height: 74px;
-            left: 521px;
-            filter: drop-shadow(0px 6.20061px 31.003px rgba(0, 0, 0, 0.8));
-            border-radius: 10px;
-        }
-
-        /* Rank frame positions */
-        .rank-frame:nth-child(1) { top: 178px; }
-        .rank-frame:nth-child(2) { top: 267px; }
-        .rank-frame:nth-child(3) { top: 356px; }
-        .rank-frame:nth-child(4) { top: 445px; }
-        .rank-frame:nth-child(5) { top: 534px; }
-        .rank-frame:nth-child(6) { top: 623px; }
-        .rank-frame:nth-child(7) { top: 712px; }
-        .rank-frame:nth-child(8) { top: 801px; }
-        .rank-frame:nth-child(9) { top: 890px; }
-        .rank-frame:nth-child(10) { top: 979px; }
     </style>
 </head>
 <body>
@@ -302,37 +360,25 @@
             rankElement.textContent = rank;
             rankFrame.appendChild(rankElement);
 
-            // Create the main frame element
-            const frame = document.createElement('div');
-            frame.className = 'frame';
+            // Create the main frame
+            const mainFrame = document.createElement('div');
+            mainFrame.className = 'main-frame';
 
             // Create player name element
             const nameElement = document.createElement('div');
             nameElement.className = 'player-name';
             nameElement.textContent = player;
-
-            // Create flag element
-            const flagElement = document.createElement('img');
-            flagElement.className = 'flag';
-            flagElement.src = `https://flagcdn.com/w80/${flag.toLowerCase()}.png`;
-            flagElement.onerror = function() {
-                this.src = `https://flagsapi.com/${flag}/flat/64.png`;
-            };
-            flagElement.alt = `${flag} flag`;
+            mainFrame.appendChild(nameElement);
 
             // Create score element
             const scoreElement = document.createElement('div');
             scoreElement.className = 'player-score';
             scoreElement.textContent = record;
-
-            // Append all elements to the frame
-            frame.appendChild(nameElement);
-            frame.appendChild(flagElement);
-            frame.appendChild(scoreElement);
+            mainFrame.appendChild(scoreElement);
 
             // Append both frames to the row
             row.appendChild(rankFrame);
-            row.appendChild(frame);
+            row.appendChild(mainFrame);
 
             return row;
         }
