@@ -430,7 +430,10 @@
                 
                 if (data.standings && data.standings.length > 0) {
                     const standingsContainer = document.getElementById('standings-container');
-                    const top10Standings = data.standings.slice(0, 10);
+                    
+                    // Filter out dropped players and get top 10 active players
+                    const activePlayers = data.standings.filter(entry => entry.status !== 'Dropped');
+                    const top10Standings = activePlayers.slice(0, 10);
                     
                     // Clear existing content
                     standingsContainer.innerHTML = '';
@@ -450,7 +453,7 @@
                         fitText(nameElement);
                     });
                     
-                    showDebug(`Updated standings: showing top 10 of ${data.standings.length} entries`);
+                    showDebug(`Updated standings: showing top 10 of ${activePlayers.length} active players`);
                 } else {
                     showDebug('No standings data received');
                 }
