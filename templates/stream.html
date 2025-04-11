@@ -374,8 +374,15 @@
             // Create hero image
             const heroImage = document.createElement('img');
             heroImage.className = 'hero-image';
-            heroImage.src = '/static/nohero.png';  // Always start with nohero.png
-            heroImage.alt = '';  // Empty alt text to prevent "No Hero" from showing
+            if (hero && heroImages[hero]) {
+                heroImage.src = `/static/Heroes/${heroImages[hero]}`;
+                heroImage.onerror = function() {
+                    this.style.display = 'none';  // Hide the image if it fails to load
+                };
+            } else {
+                heroImage.style.display = 'none';  // Hide the image if no hero or mapping
+            }
+            heroImage.alt = '';  // Empty alt text to prevent text from showing
             row.appendChild(heroImage);
 
             // Create the rank frame
