@@ -111,14 +111,37 @@
             { type: "bottom", position: 2, name: "CONNOR BRYANT", scrapedNames: ["Connor Bryant"] }
         ];
 
+        function normalizePlayerName(name) {
+            return name.trim().toUpperCase().replace(/[^\w\s-]/g, '');
+        }
+
         function findPlayerMatch(scrapedName) {
-            scrapedName = scrapedName.trim();
+            if (!scrapedName) return null;
+            
+            const normalizedScrapedName = normalizePlayerName(scrapedName);
+            console.log(`Trying to match: ${normalizedScrapedName}`);
+            
             for (const player of PLAYERS) {
-                if (player.scrapedNames.includes(scrapedName)) {
-                    console.log(`Found match: ${scrapedName} for ${player.name}`);
-                    return player;
+                // Try exact matches first
+                for (const variant of player.scrapedNames) {
+                    const normalizedVariant = normalizePlayerName(variant);
+                    if (normalizedScrapedName === normalizedVariant) {
+                        console.log(`Found exact match: ${scrapedName} for ${player.name}`);
+                        return player;
+                    }
+                }
+                
+                // Then try partial matches (if scraped name is part of the player name or vice versa)
+                for (const variant of player.scrapedNames) {
+                    const normalizedVariant = normalizePlayerName(variant);
+                    if (normalizedScrapedName.includes(normalizedVariant) || 
+                        normalizedVariant.includes(normalizedScrapedName)) {
+                        console.log(`Found partial match: ${scrapedName} for ${player.name}`);
+                        return player;
+                    }
                 }
             }
+            console.log(`No match found for: ${scrapedName}`);
             return null;
         }
 
