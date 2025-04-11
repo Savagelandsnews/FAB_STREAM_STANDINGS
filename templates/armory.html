@@ -146,12 +146,6 @@
                 const standingsResponse = await fetch('/standings?source=armory');
                 const data = await standingsResponse.json();
                 
-                // Debug log all standings
-                if (data.standings && data.droppedPlayers) {
-                    const allScrapedPlayers = [...data.standings, ...data.droppedPlayers];
-                    console.log("All scraped players:", allScrapedPlayers.map(p => p.player));
-                }
-                
                 if (data.standings || data.droppedPlayers) {
                     // Create a map to store player status and data
                     const playerStatusMap = new Map();
@@ -161,8 +155,6 @@
                     allPlayers.forEach(entry => {
                         const matchedPlayer = findPlayerMatch(entry.player);
                         if (matchedPlayer) {
-                            // Debug log the entry data
-                            console.log(`Processing ${entry.player}:`, entry);
                             playerStatusMap.set(matchedPlayer.name, {
                                 isDropped: entry.isDropped || false,
                                 wins: parseInt(entry.wins) || 0
@@ -181,7 +173,7 @@
                                 record = 'DROP';
                             } else {
                                 const wins = playerData.wins;
-                                const losses = currentRound - wins;
+                                const losses = wins >= currentRound ? 0 : currentRound - wins;
                                 record = `${wins}-${losses}`;
                             }
                             console.log(`Setting ${player.name}: ${record} (wins: ${playerData.wins}, round: ${currentRound})`);
@@ -200,8 +192,8 @@
         // Initial update
         updateStandings();
 
-        // Update every 30 seconds
-        setInterval(updateStandings, 30000);
+        // Update every 5 seconds to match the round check frequency
+        setInterval(updateStandings, 5000);
     </script>
 </body>
 </html> 
