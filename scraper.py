@@ -133,16 +133,21 @@ async def get_standings(source: str = None):
         standings = []
         dropped_players = []
         
-        rows = table.find_all('tr')[1:]  # Skip header row
+        rows = table.find_all('tr')[1:]
         for row in rows:
             cols = row.find_all('td')
-            if len(cols) >= 3:
+            if len(cols) >= 3:  # We need at least rank, player, and wins
                 rank = cols[0].text.strip()
                 player_cell = cols[1]
-                wins = cols[3].text.strip()  # Wins is now in the 4th column
                 
-                # Skip empty rows
-                if not player_cell.text.strip() or not wins:
+                # Find the wins column - it's either the last column or second to last
+                wins = None
+                for col in reversed(cols[2:]):  # Check from right to left
+                    if col.text.strip().isdigit():
+                        wins = col.text.strip()
+                        break
+                
+                if not wins:
                     continue
                 
                 # Extract flag from player cell
@@ -153,13 +158,18 @@ async def get_standings(source: str = None):
                     if flag_classes:
                         flag = flag_classes[0].upper()
                 
+                # Hero is optional - only include if we have a 4th column and it's not the wins column
+                hero = ''
+                if len(cols) >= 4 and not cols[2].text.strip().isdigit():
+                    hero = cols[2].text.strip()
+                
                 player_data = {
                     'rank': rank,
                     'player': player_cell.text.strip(),
                     'wins': wins,
                     'flag': flag,
                     'isDropped': rank == 'Dropped',
-                    'hero': cols[2].text.strip()  # Hero is in the 3rd column
+                    'hero': hero
                 }
                 
                 if rank == 'Dropped':
