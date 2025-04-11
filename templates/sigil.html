@@ -97,48 +97,6 @@
             text-align: right;
             color: #000000;
         }
-
-        /* Team name styling */
-        .team-name {
-            position: absolute;
-            width: 615px;
-            height: 115px;
-            left: 252px;
-            top: 668px;
-            font-family: 'Bebas Neue';
-            font-style: normal;
-            font-weight: 400;
-            font-size: 96px;
-            line-height: 120%;
-            text-align: center;
-            background: linear-gradient(180deg, #CBA655 0%, #F0EBB6 24.93%, #DBB45F 57.57%, #B08F49 118.71%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            text-fill-color: transparent;
-        }
-
-        /* Region styling */
-        .region {
-            position: absolute;
-            width: 362px;
-            height: 72px;
-            left: 379px;
-            top: 748px;
-            font-family: 'Montserrat';
-            font-style: normal;
-            font-weight: 700;
-            font-size: 36px;
-            line-height: 100%;
-            display: flex;
-            align-items: center;
-            text-align: center;
-            background: linear-gradient(180deg, #CBA655 0%, #F0EBB6 24.93%, #DBB45F 57.57%, #B08F49 118.71%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            text-fill-color: transparent;
-        }
     </style>
 </head>
 <body>
@@ -244,12 +202,6 @@
 
                         html += createPlayerEntry(playerName, record);
                     });
-
-                    // Add team name and region
-                    html += `
-                        <div class="team-name">TEAM SIGIL</div>
-                        <div class="region">INTERNATIONAL</div>
-                    `;
 
                     container.innerHTML = html;
                 }
