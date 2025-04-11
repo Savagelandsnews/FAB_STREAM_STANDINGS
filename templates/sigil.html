@@ -108,59 +108,48 @@
     </div>
 
     <script>
-        // Define the fixed list of players with their exact scraped names and positions
-        const PLAYERS = [
-            { type: "main", position: 1, name: "ALEX CHITU", scrapedNames: ["Alex Chitu"] },
-            { type: "main", position: 2, name: "ANTON CID-MEIJAS", scrapedNames: ["Anton Cid-Meijas"] },
-            { type: "main", position: 3, name: "SHAHMIR SAMEE", scrapedNames: ["Shahmir Samee"] },
-            { type: "main", position: 4, name: "JASON ROLFE", scrapedNames: ["Jason Rolfe"] },
-            { type: "main", position: 5, name: "SAMUEL BRABEN", scrapedNames: ["Samuel Braben"] },
-            { type: "main", position: 6, name: "PIERRE-NICOLAS PERRIN", scrapedNames: ["Pierre-Nicolas Perrin"], className: "pierre-nicolas" },
-            { type: "main", position: 7, name: "THOMAS BATTAGLIA", scrapedNames: ["Thomas Battaglia"] },
-            { type: "main", position: 8, name: "WILLIAM PISTEL", scrapedNames: ["William Pistel"] },
-            { type: "main", position: 9, name: "ANTHONY VERO", scrapedNames: ["Anthony Vero"] },
-            { type: "bottom", position: 1, name: "MICHAEL METALLO", scrapedNames: ["Michael Metallo"] },
-            { type: "bottom", position: 2, name: "FILIPE LIMA CARDOSO", scrapedNames: ["Filipe Lima Cardoso"], className: "filipe" }
-        ];
-
-        // Create a mapping for name lookup
-        const PLAYERS_MAPPING = {};
-        PLAYERS.forEach(player => {
-            PLAYERS_MAPPING[player.name] = {
-                scrapedNames: player.scrapedNames,
-                type: player.type,
-                position: player.position,
-                className: player.className
-            };
-        });
+        // Define the fixed list of players with their exact scraped names
+        const PLAYERS_MAPPING = {
+            "ALEX CHITU": ["Alex Chitu"],
+            "ANTON CID-MEIJAS": ["Anton Cid-Meijas"],
+            "SHAHMIR SAMEE": ["Shahmir Samee"],
+            "JASON ROLFE": ["Jason Rolfe"],
+            "SAMUEL BRABEN": ["Samuel Braben"],
+            "PIERRE-NICOLAS PERRIN": ["Pierre-Nicolas Perrin"],
+            "THOMAS BATTAGLIA": ["Thomas Battaglia"],
+            "WILLIAM PISTEL": ["William Pistel"],
+            "ANTHONY VERO": ["Anthony Vero"],
+            "MICHAEL METALLO": ["Michael Metallo"],
+            "FILIPE LIMA CARDOSO": ["Filipe Lima Cardoso"]
+        };
 
         function normalizePlayerName(name) {
             return name.trim();
         }
 
-        function findPlayerMatch(scrapedName) {
+        function findPlayerMatch(scrapedName, mappings) {
             scrapedName = normalizePlayerName(scrapedName);
-            for (const [displayName, data] of Object.entries(PLAYERS_MAPPING)) {
-                if (data.scrapedNames.includes(scrapedName)) {
+            for (const [displayName, variations] of Object.entries(mappings)) {
+                if (variations.includes(scrapedName)) {
                     console.log(`Found match: ${scrapedName} -> ${displayName}`);
-                    return { name: displayName, ...data };
+                    return displayName;
                 }
             }
             return null;
         }
 
         function createPlayerEntry(player, record) {
-            const className = player.type === "main" ? 
-                `main-player` : 
-                `bottom-player-${player.position}`;
+            const className = player === "JACOB CLEMENTS" ? 
+                `bottom-player-1` : 
+                `main-player`;
             
-            const nameClass = player.className ? 
-                `player-name ${player.className}` : 
+            const nameClass = player === "JACOB CLEMENTS" ? 
+                'player-name jacob-clements' : 
                 'player-name';
                 
             return `
                 <div class="${className}">
-                    <div class="${nameClass}">${player.name}</div>
+                    <div class="${nameClass}">${player}</div>
                     <div class="player-score">${record}</div>
                 </div>
             `;
@@ -173,7 +162,7 @@
                 const roundData = await roundResponse.json();
                 const currentRound = roundData.round;
 
-                // Fetch all standings
+                // Fetch standings with source parameter
                 const standingsResponse = await fetch('/standings?source=sigil');
                 const data = await standingsResponse.json();
                 
@@ -187,10 +176,9 @@
                     // Process all players (both active and dropped)
                     const allPlayers = [...data.standings, ...(data.droppedPlayers || [])];
                     allPlayers.forEach(entry => {
-                        const matchedPlayer = findPlayerMatch(entry.player);
-                        if (matchedPlayer) {
-                            playerStatusMap.set(matchedPlayer.name, {
-                                ...matchedPlayer,
+                        const matchedName = findPlayerMatch(entry.player, PLAYERS_MAPPING);
+                        if (matchedName) {
+                            playerStatusMap.set(matchedName, {
                                 isDropped: entry.isDropped || false,
                                 wins: parseInt(entry.wins)
                             });
@@ -198,8 +186,8 @@
                     });
 
                     // Generate entries for each player in our fixed order
-                    PLAYERS.forEach(player => {
-                        const playerData = playerStatusMap.get(player.name);
+                    Object.keys(PLAYERS_MAPPING).forEach(playerName => {
+                        const playerData = playerStatusMap.get(playerName);
                         let record = '0-0';
                         
                         if (playerData) {
@@ -210,10 +198,10 @@
                                 const losses = wins >= currentRound ? 0 : currentRound - wins;
                                 record = `${wins}-${losses}`;
                             }
-                            console.log(`${player.name}: ${record} (dropped: ${playerData.isDropped})`);
+                            console.log(`${playerName}: ${record} (dropped: ${playerData.isDropped})`);
                         }
 
-                        html += createPlayerEntry(player, record);
+                        html += createPlayerEntry(playerName, record);
                     });
 
                     container.innerHTML = html;

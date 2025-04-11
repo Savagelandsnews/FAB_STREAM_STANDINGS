@@ -98,17 +98,17 @@
     <script>
         // Define the fixed list of players with their exact scraped names
         const PLAYERS_MAPPING = {
-            "BRODIE SPURLOCK": ["Brodie Spurlock"],
-            "MICHAEL FENG": ["Michael Feng"],
-            "MICHAEL HAMILTON": ["Michael Hamilton"],
-            "AARON SHANTZ": ["Aaron Shantz"],
-            "YUKI LEE BENDER": ["Yuki Lee Bender"],
-            "JACOB CLEMENTS": ["Jacob Clements"],
-            "ARTHUR TREHET": ["Arthur Trehet"],
-            "PABLO PINTOR": ["Pablo Pintor"],
-            "SAM SUTHERLAND": ["Sam Sutherland"],
-            "SIMON NIELSEN": ["Simon Nielsen"],
-            "JUSTIN CU": ["Justin Cu"]
+            "ALEX CHITU": ["Alex Chitu"],
+            "ANTON CID-MEIJAS": ["Anton Cid-Meijas"],
+            "SHAHMIR SAMEE": ["Shahmir Samee"],
+            "JASON ROLFE": ["Jason Rolfe"],
+            "SAMUEL BRABEN": ["Samuel Braben"],
+            "PIERRE-NICOLAS PERRIN": ["Pierre-Nicolas Perrin"],
+            "THOMAS BATTAGLIA": ["Thomas Battaglia"],
+            "WILLIAM PISTEL": ["William Pistel"],
+            "ANTHONY VERO": ["Anthony Vero"],
+            "MICHAEL METALLO": ["Michael Metallo"],
+            "FILIPE LIMA CARDOSO": ["Filipe Lima Cardoso"]
         };
 
         function normalizePlayerName(name) {
@@ -127,13 +127,19 @@
         }
 
         function createPlayerEntry(player, record) {
-            const className = player.type === "main" ? 
-                `main-player` : 
-                `bottom-player-${player.position}`;
+            const className = player === "PAT ESHGHY" || player === "CONNOR BRYANT" ? 
+                `bottom-player-${player === "PAT ESHGHY" ? 1 : 2}` : 
+                `main-player`;
+            
+            const nameClass = player === "PAT ESHGHY" ? 
+                'player-name pat-eshghy' : 
+                player === "CONNOR BRYANT" ? 
+                'player-name connor-bryant' : 
+                'player-name';
                 
             return `
                 <div class="${className}">
-                    <div class="player-name">${player}</div>
+                    <div class="${nameClass}">${player}</div>
                     <div class="player-score">${record}</div>
                 </div>
             `;
@@ -146,7 +152,7 @@
                 const roundData = await roundResponse.json();
                 const currentRound = roundData.round;
 
-                // Fetch all standings
+                // Fetch standings with source parameter
                 const standingsResponse = await fetch('/standings?source=armory');
                 const data = await standingsResponse.json();
                 
