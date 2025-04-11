@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FAB Tournament Players - Stream View</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            width: 1920px;
+            height: 1080px;
+            background-image: url('/static/Player.png');
+            background-size: 1920px 1080px;
+            background-position: top left;
+            background-repeat: no-repeat;
+            overflow: hidden;
+        }
+
+        /* Player frames */
+        .player-frame {
+            position: absolute;
+            width: 788px;
+            height: 74px;
+            left: 566px;
+        }
+
+        /* Player positions */
+        .player-frame:nth-child(1) { top: 178px; }
+        .player-frame:nth-child(2) { top: 267px; }
+        .player-frame:nth-child(3) { top: 356px; }
+        .player-frame:nth-child(4) { top: 445px; }
+        .player-frame:nth-child(5) { top: 534px; }
+        .player-frame:nth-child(6) { top: 623px; }
+        .player-frame:nth-child(7) { top: 712px; }
+        .player-frame:nth-child(8) { top: 801px; }
+        .player-frame:nth-child(9) { top: 890px; }
+        .player-frame:nth-child(10) { top: 979px; }
+
+        /* Player name styling */
+        .player-name {
+            position: absolute;
+            width: 387px;
+            height: 67px;
+            left: 144px;
+            top: 5px;
+            font-family: 'Bebas Neue';
+            font-style: normal;
+            font-weight: 400;
+            font-size: 56px;
+            line-height: 120%;
+            background: linear-gradient(180deg, #CBA655 0%, #F0EBB6 24.93%, #DBB45F 57.57%, #B08F49 118.71%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-fill-color: transparent;
+        }
+
+        /* Player score styling */
+        .player-score {
+            position: absolute;
+            width: 143px;
+            height: 67px;
+            left: 625px;
+            top: 5px;
+            font-family: 'Bebas Neue';
+            font-style: normal;
+            font-weight: 400;
+            font-size: 56px;
+            line-height: 120%;
+            text-align: right;
+            color: #000000;
+        }
+    </style>
+</head>
+<body>
+    <div id="content">
+        <!-- Player entries will be inserted here dynamically -->
+    </div>
+
+    <script>
+        // Define the fixed list of players with their exact scraped names
+        const PLAYERS = [
+            { type: "player", position: 1, name: "SHING TSANG", scrapedNames: ["Shing Tsang"] },
+            { type: "player", position: 2, name: "CHRISTOPHER IAALI", scrapedNames: ["Christopher Iaali"] },
+            { type: "player", position: 3, name: "ROB CATTON", scrapedNames: ["Rob Catton"] },
+            { type: "player", position: 4, name: "JACOB CLEMENTS", scrapedNames: ["Jacob Clements"] },
+            { type: "player", position: 5, name: "SIMON NIELSEN", scrapedNames: ["Simon Nielsen"] },
+            { type: "player", position: 6, name: "YUKI LEE BENDER", scrapedNames: ["Yuki Lee Bender"] },
+            { type: "player", position: 7, name: "NICK BUTCHER", scrapedNames: ["Nick Butcher"] },
+            { type: "player", position: 8, name: "PUDDING TAM", scrapedNames: ["Pudding Tam"] },
+            { type: "player", position: 9, name: "JUSTIN CU", scrapedNames: ["Justin Cu"] },
+            { type: "player", position: 10, name: "ALLEN LAU", scrapedNames: ["Allen Lau"] }
+        ];
+
+        function normalizePlayerName(name) {
+            return name.trim();
+        }
+
+        function findPlayerMatch(scrapedName, players) {
+            scrapedName = normalizePlayerName(scrapedName);
+            for (const player of players) {
+                if (player.scrapedNames.includes(scrapedName)) {
+                    console.log(`Found match: ${scrapedName} -> ${player.name}`);
+                    return player;
+                }
+            }
+            return null;
+        }
+
+        function createPlayerEntry(player, record) {
+            return `
+                <div class="player-frame">
+                    <div class="player-name">${player.name}</div>
+                    <div class="player-score">${record}</div>
+                </div>
+            `;
+        }
+
+        async function updateStandings() {
+            try {
+                // Fetch current round
+                const roundResponse = await fetch('/get-round');
+                const roundData = await roundResponse.json();
+                const currentRound = roundData.round;
+
+                // Fetch standings with source parameter
+                const standingsResponse = await fetch('/standings?source=players');
+                const data = await standingsResponse.json();
+                
+                if (data.standings || data.droppedPlayers) {
+                    const container = document.getElementById('content');
+                    let html = '';
+
+                    // Create a map to store player status and data
+                    const playerStatusMap = new Map();
+
+                    // Process all players (both active and dropped)
+                    const allPlayers = [...data.standings, ...(data.droppedPlayers || [])];
+                    allPlayers.forEach(entry => {
+                        const matchedPlayer = findPlayerMatch(entry.player, PLAYERS);
+                        if (matchedPlayer) {
+                            playerStatusMap.set(matchedPlayer.name, {
+                                isDropped: entry.isDropped || false,
+                                wins: parseInt(entry.wins)
+                            });
+                        }
+                    });
+
+                    // Generate entries for each player in our fixed order
+                    PLAYERS.forEach(player => {
+                        const playerData = playerStatusMap.get(player.name);
+                        let record = '0-0';
+                        
+                        if (playerData) {
+                            if (playerData.isDropped) {
+                                record = 'DROP';
+                            } else {
+                                const wins = playerData.wins;
+                                const losses = wins >= currentRound ? 0 : currentRound - wins;
+                                record = `${wins}-${losses}`;
+                            }
+                            console.log(`${player.name}: ${record} (dropped: ${playerData.isDropped})`);
+                        }
+
+                        html += createPlayerEntry(player, record);
+                    });
+
+                    container.innerHTML = html;
+                }
+            } catch (error) {
+                console.error('Error updating standings:', error);
+            }
+        }
+
+        // Update standings immediately and then every 5 seconds
+        updateStandings();
+        setInterval(updateStandings, 5000);
+    </script>
+</body>
+</html> 
