@@ -358,19 +358,58 @@
         }
 
         function createPlayerEntry(player, hero, wins, rank) {
-            const heroImage = hero ? `/static/heroes/${hero.toLowerCase().replace(/\s+/g, '-')}.png` : '/static/nohero.png';
-            return `
-                <div class="player-entry">
-                    <div class="rank">${rank}</div>
-                    <div class="player-info">
-                        <div class="player-name">${player}</div>
-                        <div class="hero">
-                            <img src="${heroImage}" alt="${hero || 'No Hero'}" onerror="this.src='/static/nohero.png'">
-                        </div>
-                    </div>
-                    <div class="wins">${wins}</div>
-                </div>
-            `;
+            // Convert wins to number to ensure proper calculation
+            const winCount = parseInt(wins);
+            // Get current round from the roundNumber span
+            const currentRound = parseInt(document.getElementById('roundNumber').textContent);
+            // Calculate losses (if wins equal current round, losses are 0)
+            const lossCount = winCount >= currentRound ? 0 : currentRound - winCount;
+            // Format the record as "W-L"
+            const record = `${winCount}-${lossCount}`;
+
+            // Create the player row container
+            const row = document.createElement('div');
+            row.className = 'player-row';
+
+            // Create hero image
+            const heroImage = document.createElement('img');
+            heroImage.className = 'hero-image';
+            heroImage.src = hero ? `/static/heroes/${hero.toLowerCase().replace(/\s+/g, '-')}.png` : '/static/nohero.png';
+            heroImage.alt = hero || 'No Hero';
+            heroImage.onerror = function() { this.src = '/static/nohero.png'; };
+            row.appendChild(heroImage);
+
+            // Create the rank frame
+            const rankFrame = document.createElement('div');
+            rankFrame.className = 'rank-frame';
+
+            // Create rank number element
+            const rankElement = document.createElement('div');
+            rankElement.className = 'rank-number';
+            rankElement.textContent = rank;
+            rankFrame.appendChild(rankElement);
+
+            // Create the main frame
+            const mainFrame = document.createElement('div');
+            mainFrame.className = 'main-frame';
+
+            // Create player name element
+            const nameElement = document.createElement('div');
+            nameElement.className = 'player-name';
+            nameElement.textContent = player;
+            mainFrame.appendChild(nameElement);
+
+            // Create score element
+            const scoreElement = document.createElement('div');
+            scoreElement.className = 'player-score';
+            scoreElement.textContent = record;
+            mainFrame.appendChild(scoreElement);
+
+            // Append both frames to the row
+            row.appendChild(rankFrame);
+            row.appendChild(mainFrame);
+
+            return row;
         }
 
         async function updateStandings() {
@@ -409,7 +448,7 @@
                             entry.wins,
                             entry.rank
                         );
-                        standingsContainer.innerHTML += playerEntry;
+                        standingsContainer.appendChild(playerEntry);
                     });
 
                     document.querySelectorAll('.player-name').forEach(nameElement => {
