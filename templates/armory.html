@@ -161,9 +161,11 @@
                     allPlayers.forEach(entry => {
                         const matchedPlayer = findPlayerMatch(entry.player);
                         if (matchedPlayer) {
+                            // Debug log the entry data
+                            console.log(`Processing ${entry.player}:`, entry);
                             playerStatusMap.set(matchedPlayer.name, {
                                 isDropped: entry.isDropped || false,
-                                wins: parseInt(entry.wins)
+                                wins: parseInt(entry.wins) || 0
                             });
                         }
                     });
@@ -179,10 +181,10 @@
                                 record = 'DROP';
                             } else {
                                 const wins = playerData.wins;
-                                const losses = wins >= currentRound ? 0 : currentRound - wins;
+                                const losses = currentRound - wins;
                                 record = `${wins}-${losses}`;
                             }
-                            console.log(`Setting ${player.name}: ${record}`);
+                            console.log(`Setting ${player.name}: ${record} (wins: ${playerData.wins}, round: ${currentRound})`);
                         }
 
                         html += createPlayerEntry(player, record);
