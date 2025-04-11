@@ -101,52 +101,33 @@
     </div>
 
     <script>
-        // Define the fixed list of players with their position types and scraped names
-        const PLAYERS = [
-            { type: "main", position: 1, name: "MATEUSZ SASS", scrapedNames: ["Mateusz Sass"] },
-            { type: "main", position: 2, name: "FILIP MIKOŁAJCZYK", scrapedNames: ["Filip Mikołajczyk"] },
-            { type: "main", position: 3, name: "YASSINE ECHAFAI", scrapedNames: ["Yassine Echafai"] },
-            { type: "main", position: 4, name: "GUILLEM LAS HERAS", scrapedNames: ["Guillem Las Heras"] },
-            { type: "main", position: 5, name: "DAVID J. IGLESIAS", scrapedNames: ["David J. Iglesias"] },
-            { type: "main", position: 6, name: "ILIAS KARAMANIS", scrapedNames: ["Ilias Karamanis"] },
-            { type: "main", position: 7, name: "FELIX KIRISCH", scrapedNames: ["Felix Kirisch"] },
-            { type: "main", position: 8, name: "MAXIMILIAN SCHMIDT", scrapedNames: ["Maximilian Schmidt"] },
-            { type: "main", position: 9, name: "LAURIN NIEHUES", scrapedNames: ["Laurin Niehues"] },
-            { type: "bottom", position: 1, name: "ROB CATTON", scrapedNames: ["Rob Catton"] },
-            { type: "bottom", position: 2, name: "FLORIN-CRISTIAN LOGHIN", scrapedNames: ["Florin-Cristian Loghin"], className: "florin-cristian" }
-        ];
+        // Define the fixed list of players with their exact scraped names
+        const PLAYERS_MAPPING = {
+            "MATEUSZ SASS": ["Mateusz Sass"],
+            "FILIP MIKOŁAJCZYK": ["Filip Mikołajczyk"],
+            "YASSINE ECHAFAI": ["Yassine Echafai"],
+            "GUILLEM LAS HERAS": ["Guillem Las Heras"],
+            "DAVID J. IGLESIAS": ["David J. Iglesias"],
+            "ILIAS KARAMANIS": ["Ilias Karamanis"],
+            "FELIX KIRISCH": ["Felix Kirisch"],
+            "MAXIMILIAN SCHMIDT": ["Maximilian Schmidt"],
+            "LAURIN NIEHUES": ["Laurin Niehues"],
+            "ROB CATTON": ["Rob Catton"],
+            "FLORIN-CRISTIAN LOGHIN": ["Florin-Cristian Loghin"]
+        };
 
         function normalizePlayerName(name) {
-            return name.trim().toUpperCase().replace(/[^\w\s-]/g, '');
+            return name.trim();
         }
 
-        function findPlayerMatch(scrapedName) {
-            if (!scrapedName) return null;
-            
-            const normalizedScrapedName = normalizePlayerName(scrapedName);
-            console.log(`Trying to match: ${normalizedScrapedName}`);
-            
-            for (const player of PLAYERS) {
-                // Try exact matches first
-                for (const variant of player.scrapedNames) {
-                    const normalizedVariant = normalizePlayerName(variant);
-                    if (normalizedScrapedName === normalizedVariant) {
-                        console.log(`Found exact match: ${scrapedName} for ${player.name}`);
-                        return player;
-                    }
-                }
-                
-                // Then try partial matches (if scraped name is part of the player name or vice versa)
-                for (const variant of player.scrapedNames) {
-                    const normalizedVariant = normalizePlayerName(variant);
-                    if (normalizedScrapedName.includes(normalizedVariant) || 
-                        normalizedVariant.includes(normalizedScrapedName)) {
-                        console.log(`Found partial match: ${scrapedName} for ${player.name}`);
-                        return player;
-                    }
+        function findPlayerMatch(scrapedName, mappings) {
+            scrapedName = normalizePlayerName(scrapedName);
+            for (const [displayName, variations] of Object.entries(mappings)) {
+                if (variations.includes(scrapedName)) {
+                    console.log(`Found match: ${scrapedName} -> ${displayName}`);
+                    return displayName;
                 }
             }
-            console.log(`No match found for: ${scrapedName}`);
             return null;
         }
 
@@ -161,7 +142,7 @@
                 
             return `
                 <div class="${className}">
-                    <div class="${nameClass}">${player.name}</div>
+                    <div class="${nameClass}">${player}</div>
                     <div class="player-score">${record}</div>
                 </div>
             `;
@@ -179,25 +160,27 @@
                 const data = await standingsResponse.json();
                 
                 if (data.standings || data.droppedPlayers) {
+                    const container = document.getElementById('content');
+                    let html = '';
+
                     // Create a map to store player status and data
                     const playerStatusMap = new Map();
 
-                    // Process all players from scraped data (active and dropped)
+                    // Process all players (both active and dropped)
                     const allPlayers = [...data.standings, ...(data.droppedPlayers || [])];
                     allPlayers.forEach(entry => {
-                        const matchedPlayer = findPlayerMatch(entry.player);
-                        if (matchedPlayer) {
-                            playerStatusMap.set(matchedPlayer.name, {
+                        const matchedName = findPlayerMatch(entry.player, PLAYERS_MAPPING);
+                        if (matchedName) {
+                            playerStatusMap.set(matchedName, {
                                 isDropped: entry.isDropped || false,
-                                wins: parseInt(entry.wins) || 0
+                                wins: parseInt(entry.wins)
                             });
                         }
                     });
 
-                    // Generate HTML for all players
-                    let html = '';
-                    PLAYERS.forEach(player => {
-                        const playerData = playerStatusMap.get(player.name);
+                    // Generate entries for each player in our fixed order
+                    Object.keys(PLAYERS_MAPPING).forEach(playerName => {
+                        const playerData = playerStatusMap.get(playerName);
                         let record = '0-0';
                         
                         if (playerData) {
@@ -205,15 +188,16 @@
                                 record = 'DROP';
                             } else {
                                 const wins = playerData.wins;
-                                const losses = currentRound - wins;
+                                const losses = wins >= currentRound ? 0 : currentRound - wins;
                                 record = `${wins}-${losses}`;
                             }
+                            console.log(`${playerName}: ${record} (dropped: ${playerData.isDropped})`);
                         }
 
-                        html += createPlayerEntry(player, record);
+                        html += createPlayerEntry(playerName, record);
                     });
-                    
-                    document.getElementById('content').innerHTML = html;
+
+                    container.innerHTML = html;
                 }
             } catch (error) {
                 console.error('Error updating standings:', error);
