@@ -101,31 +101,42 @@
     </div>
 
     <script>
-        // Define the fixed list of players with their exact scraped names
-        const PLAYERS_MAPPING = {
-            "MATEUSZ SASS": ["Mateusz Sass"],
-            "FILIP MIKOŁAJCZYK": ["Filip Mikołajczyk"],
-            "YASSINE ECHAFAI": ["Yassine Echafai"],
-            "GUILLEM LAS HERAS": ["Guillem Las Heras"],
-            "DAVID J. IGLESIAS": ["David J. Iglesias"],
-            "ILIAS KARAMANIS": ["Ilias Karamanis"],
-            "FELIX KIRISCH": ["Felix Kirisch"],
-            "MAXIMILIAN SCHMIDT": ["Maximilian Schmidt"],
-            "LAURIN NIEHUES": ["Laurin Niehues"],
-            "ROB CATTON": ["Rob Catton"],
-            "FLORIN-CRISTIAN LOGHIN": ["Florin-Cristian Loghin"]
-        };
+        // Define the fixed list of players with their exact scraped names and positions
+        const PLAYERS = [
+            { type: "main", position: 1, name: "MATEUSZ SASS", scrapedNames: ["Mateusz Sass"] },
+            { type: "main", position: 2, name: "FILIP MIKOŁAJCZYK", scrapedNames: ["Filip Mikołajczyk"] },
+            { type: "main", position: 3, name: "YASSINE ECHAFAI", scrapedNames: ["Yassine Echafai"] },
+            { type: "main", position: 4, name: "GUILLEM LAS HERAS", scrapedNames: ["Guillem Las Heras"] },
+            { type: "main", position: 5, name: "DAVID J. IGLESIAS", scrapedNames: ["David J. Iglesias"] },
+            { type: "main", position: 6, name: "ILIAS KARAMANIS", scrapedNames: ["Ilias Karamanis"] },
+            { type: "main", position: 7, name: "FELIX KIRISCH", scrapedNames: ["Felix Kirisch"] },
+            { type: "main", position: 8, name: "MAXIMILIAN SCHMIDT", scrapedNames: ["Maximilian Schmidt"] },
+            { type: "main", position: 9, name: "LAURIN NIEHUES", scrapedNames: ["Laurin Niehues"] },
+            { type: "bottom", position: 1, name: "ROB CATTON", scrapedNames: ["Rob Catton"] },
+            { type: "bottom", position: 2, name: "FLORIN-CRISTIAN LOGHIN", scrapedNames: ["Florin-Cristian Loghin"], className: "florin-cristian" }
+        ];
+
+        // Create a mapping for name lookup
+        const PLAYERS_MAPPING = {};
+        PLAYERS.forEach(player => {
+            PLAYERS_MAPPING[player.name] = {
+                scrapedNames: player.scrapedNames,
+                type: player.type,
+                position: player.position,
+                className: player.className
+            };
+        });
 
         function normalizePlayerName(name) {
             return name.trim();
         }
 
-        function findPlayerMatch(scrapedName, mappings) {
+        function findPlayerMatch(scrapedName) {
             scrapedName = normalizePlayerName(scrapedName);
-            for (const [displayName, variations] of Object.entries(mappings)) {
-                if (variations.includes(scrapedName)) {
+            for (const [displayName, data] of Object.entries(PLAYERS_MAPPING)) {
+                if (data.scrapedNames.includes(scrapedName)) {
                     console.log(`Found match: ${scrapedName} -> ${displayName}`);
-                    return displayName;
+                    return { name: displayName, ...data };
                 }
             }
             return null;
@@ -142,7 +153,7 @@
                 
             return `
                 <div class="${className}">
-                    <div class="${nameClass}">${player}</div>
+                    <div class="${nameClass}">${player.name}</div>
                     <div class="player-score">${record}</div>
                 </div>
             `;
@@ -169,9 +180,10 @@
                     // Process all players (both active and dropped)
                     const allPlayers = [...data.standings, ...(data.droppedPlayers || [])];
                     allPlayers.forEach(entry => {
-                        const matchedName = findPlayerMatch(entry.player, PLAYERS_MAPPING);
-                        if (matchedName) {
-                            playerStatusMap.set(matchedName, {
+                        const matchedPlayer = findPlayerMatch(entry.player);
+                        if (matchedPlayer) {
+                            playerStatusMap.set(matchedPlayer.name, {
+                                ...matchedPlayer,
                                 isDropped: entry.isDropped || false,
                                 wins: parseInt(entry.wins)
                             });
@@ -179,8 +191,8 @@
                     });
 
                     // Generate entries for each player in our fixed order
-                    Object.keys(PLAYERS_MAPPING).forEach(playerName => {
-                        const playerData = playerStatusMap.get(playerName);
+                    PLAYERS.forEach(player => {
+                        const playerData = playerStatusMap.get(player.name);
                         let record = '0-0';
                         
                         if (playerData) {
@@ -191,10 +203,10 @@
                                 const losses = wins >= currentRound ? 0 : currentRound - wins;
                                 record = `${wins}-${losses}`;
                             }
-                            console.log(`${playerName}: ${record} (dropped: ${playerData.isDropped})`);
+                            console.log(`${player.name}: ${record} (dropped: ${playerData.isDropped})`);
                         }
 
-                        html += createPlayerEntry(playerName, record);
+                        html += createPlayerEntry(player, record);
                     });
 
                     container.innerHTML = html;
