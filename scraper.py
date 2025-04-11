@@ -170,7 +170,8 @@ async def get_standings(source: str = None):
             standings = standings[row_range["start"]:row_range["end"]]
             logger.info(f"Returning standings rows {row_range['start'] + 1}-{row_range['end']} of {len(standings)} total entries")
         else:
-            logger.info(f"Returning all standings for bluepitch view")
+            # For team pages, return all standings without filtering
+            logger.info(f"Returning all standings for team view")
         
         return JSONResponse(content={
             "standings": standings,
