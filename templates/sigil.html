@@ -18,12 +18,78 @@
             overflow: hidden;
         }
 
+        /* Main container */
+        #content {
+            position: relative;
+            width: 1920px;
+            height: 1080px;
+        }
+
+        /* Gradient overlay */
+        .gradient-overlay {
+            position: absolute;
+            width: 1920px;
+            height: 929px;
+            left: 0px;
+            top: 211px;
+            background: linear-gradient(180deg, rgba(0, 0, 0, 0) 12.65%, #000000 126%);
+        }
+
+        /* Header section */
+        .header {
+            position: absolute;
+            width: 1920px;
+            height: 179px;
+            left: 0px;
+            top: -28px;
+            filter: drop-shadow(0px 18px 15.4px rgba(0, 0, 0, 0.75));
+        }
+
+        .header-bg {
+            position: absolute;
+            width: 1920px;
+            height: 170.7px;
+            left: 0px;
+            top: -28px;
+            background: #000000;
+        }
+
+        .header-border {
+            position: absolute;
+            width: 1920px;
+            height: 9.48px;
+            left: 0px;
+            top: 141.52px;
+            background: linear-gradient(90deg, #FCC15C 0%, #F5BC57 47.5%, #CFA23D 100%);
+        }
+
+        .teams-to-watch {
+            position: absolute;
+            width: 498px;
+            height: 115px;
+            left: 711px;
+            top: 19px;
+            font-family: 'Bebas Neue';
+            font-style: normal;
+            font-weight: 400;
+            font-size: 96px;
+            line-height: 120%;
+            text-align: center;
+            background: linear-gradient(180deg, #CBA655 0%, #F0EBB6 24.93%, #DBB45F 57.57%, #B08F49 118.71%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-fill-color: transparent;
+        }
+
         /* Main player frames (right side) */
         .main-player {
             position: absolute;
             width: 788px;
             height: 74px;
             left: 966px;
+            filter: drop-shadow(0px 6.20061px 31.003px rgba(0, 0, 0, 0.8));
+            border-radius: 10px;
         }
         
         /* Main player positions */
@@ -44,6 +110,8 @@
             height: 74px;
             left: 163px;
             top: 845px;
+            filter: drop-shadow(0px 6.20061px 31.003px rgba(0, 0, 0, 0.8));
+            border-radius: 10px;
         }
         
         .bottom-player-2 {
@@ -52,6 +120,37 @@
             height: 74px;
             left: 163px;
             top: 934px;
+            filter: drop-shadow(0px 6.20061px 31.003px rgba(0, 0, 0, 0.8));
+            border-radius: 10px;
+        }
+
+        /* Player entry styling */
+        .player-entry {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .player-entry::before {
+            content: '';
+            position: absolute;
+            width: 1698px;
+            height: 74px;
+            left: 0px;
+            top: 0px;
+            background: linear-gradient(180deg, #CBA655 0%, #F0EBB6 24.93%, #DBB45F 57.57%, #B08F49 118.71%);
+            border-radius: 10px;
+        }
+
+        .player-entry::after {
+            content: '';
+            position: absolute;
+            width: 660px;
+            height: 74px;
+            left: 0px;
+            top: 0px;
+            background: #000000;
+            box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
         }
 
         /* Player name styling */
@@ -71,6 +170,7 @@
             -webkit-text-fill-color: transparent;
             background-clip: text;
             text-fill-color: transparent;
+            z-index: 1;
         }
 
         /* Special styles for specific players */
@@ -99,12 +199,62 @@
             line-height: 120%;
             text-align: right;
             color: #000000;
+            z-index: 1;
+        }
+
+        /* Team name and region */
+        .team-name {
+            position: absolute;
+            width: 615px;
+            height: 115px;
+            left: 252px;
+            top: 666px;
+            font-family: 'Bebas Neue';
+            font-style: normal;
+            font-weight: 400;
+            font-size: 96px;
+            line-height: 120%;
+            text-align: center;
+            background: linear-gradient(180deg, #CBA655 0%, #F0EBB6 24.93%, #DBB45F 57.57%, #B08F49 118.71%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-fill-color: transparent;
+        }
+
+        .region {
+            position: absolute;
+            width: 362px;
+            height: 72px;
+            left: 379px;
+            top: 746px;
+            font-family: 'Montserrat';
+            font-style: normal;
+            font-weight: 700;
+            font-size: 36px;
+            line-height: 100%;
+            display: flex;
+            align-items: center;
+            text-align: center;
+            background: linear-gradient(180deg, #CBA655 0%, #F0EBB6 24.93%, #DBB45F 57.57%, #B08F49 118.71%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-fill-color: transparent;
         }
     </style>
 </head>
 <body>
     <div id="content">
-        <!-- All player entries will be inserted here dynamically -->
+        <div class="gradient-overlay"></div>
+        <div class="header">
+            <div class="header-bg"></div>
+            <div class="header-border"></div>
+            <div class="teams-to-watch">TEAMS TO WATCH</div>
+        </div>
+        <!-- Player entries will be inserted here dynamically -->
+        <div class="team-name">TEAM SIGIL</div>
+        <div class="region">INTERNATIONAL</div>
     </div>
 
     <script>
@@ -153,8 +303,10 @@
                 
             return `
                 <div class="${className}">
-                    <div class="${nameClass}">${player}</div>
-                    <div class="player-score">${record}</div>
+                    <div class="player-entry">
+                        <div class="${nameClass}">${player}</div>
+                        <div class="player-score">${record}</div>
+                    </div>
                 </div>
             `;
         }
@@ -208,13 +360,9 @@
                         html += createPlayerEntry(playerName, record);
                     });
 
-                    // Add team name and region
-                    html += `
-                        <div class="team-name">TEAM SIGIL</div>
-                        <div class="region">INTERNATIONAL</div>
-                    `;
-
-                    container.innerHTML = html;
+                    // Insert player entries before the team name
+                    const teamName = container.querySelector('.team-name');
+                    teamName.insertAdjacentHTML('beforebegin', html);
                 }
             } catch (error) {
                 console.error('Error updating standings:', error);
