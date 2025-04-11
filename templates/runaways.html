@@ -146,36 +146,18 @@
                 const standingsResponse = await fetch('/standings?source=runaways');
                 const data = await standingsResponse.json();
                 
-                // Debug log all standings
-                if (data.standings && data.droppedPlayers) {
-                    const allScrapedPlayers = [...data.standings, ...data.droppedPlayers];
-                    console.log("All scraped players:", allScrapedPlayers.map(p => p.player));
-                }
-                
                 if (data.standings || data.droppedPlayers) {
                     // Create a map to store player status and data
                     const playerStatusMap = new Map();
 
-                    // Process all players (both active and dropped)
+                    // Process all players from scraped data (active and dropped)
                     const allPlayers = [...data.standings, ...(data.droppedPlayers || [])];
-                    
-                    // Special handling for known player data
-                    // Hardcoded values from the scraped data for testing
-                    playerStatusMap.set("YUANJI LI", { isDropped: false, wins: 7 });
-                    playerStatusMap.set("CODY WILLIAMS", { isDropped: false, wins: 6 });
-                    playerStatusMap.set("LUCAS OSWALD", { isDropped: false, wins: 6 });
-                    playerStatusMap.set("CHARLES DUNN", { isDropped: false, wins: 5 });
-                    playerStatusMap.set("DANIEL RUTKOWSKI", { isDropped: false, wins: 5 });
-                    playerStatusMap.set("NAIB MOBASSIR", { isDropped: false, wins: 5 });
-                    playerStatusMap.set("PAT ESHGHY", { isDropped: true, wins: 4 });
-                    
-                    // Also try to match dynamically from scraped data
                     allPlayers.forEach(entry => {
                         const matchedPlayer = findPlayerMatch(entry.player);
                         if (matchedPlayer) {
                             playerStatusMap.set(matchedPlayer.name, {
                                 isDropped: entry.isDropped || false,
-                                wins: parseInt(entry.wins)
+                                wins: parseInt(entry.wins) || 0
                             });
                         }
                     });
@@ -191,10 +173,9 @@
                                 record = 'DROP';
                             } else {
                                 const wins = playerData.wins;
-                                const losses = wins >= currentRound ? 0 : currentRound - wins;
+                                const losses = currentRound - wins;
                                 record = `${wins}-${losses}`;
                             }
-                            console.log(`Setting ${player.name}: ${record}`);
                         }
 
                         html += createPlayerEntry(player, record);
@@ -210,8 +191,8 @@
         // Initial update
         updateStandings();
 
-        // Update every 30 seconds
-        setInterval(updateStandings, 30000);
+        // Update every 5 seconds
+        setInterval(updateStandings, 5000);
     </script>
 </body>
 </html> 

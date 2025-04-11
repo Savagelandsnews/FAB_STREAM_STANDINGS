@@ -173,10 +173,9 @@
                                 record = 'DROP';
                             } else {
                                 const wins = playerData.wins;
-                                const losses = wins >= currentRound ? 0 : currentRound - wins;
+                                const losses = currentRound - wins;
                                 record = `${wins}-${losses}`;
                             }
-                            console.log(`Setting ${player.name}: ${record} (wins: ${playerData.wins}, round: ${currentRound})`);
                         }
 
                         html += createPlayerEntry(player, record);
@@ -192,7 +191,7 @@
         // Initial update
         updateStandings();
 
-        // Update every 5 seconds to match the round check frequency
+        // Update every 5 seconds
         setInterval(updateStandings, 5000);
     </script>
 </body>
