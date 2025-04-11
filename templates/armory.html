@@ -156,18 +156,6 @@
                     // Create a map to store player status and data
                     const playerStatusMap = new Map();
 
-                    // Special handling for known player data
-                    // These are values we've seen in the scraped data
-                    playerStatusMap.set("MICHAEL HAMILTON", { isDropped: false, wins: 7 });
-                    playerStatusMap.set("AARON SHANTZ", { isDropped: false, wins: 6 });
-                    playerStatusMap.set("MICHAEL FENG", { isDropped: false, wins: 6 });
-                    playerStatusMap.set("YUKI LEE BENDER", { isDropped: false, wins: 7 });
-                    playerStatusMap.set("JACOB CLEMENTS", { isDropped: false, wins: 6 });
-                    playerStatusMap.set("SAM SUTHERLAND", { isDropped: false, wins: 6 });
-                    playerStatusMap.set("JUSTIN CU", { isDropped: false, wins: 6 });
-                    playerStatusMap.set("ARTHUR TREHET", { isDropped: false, wins: 5 });
-                    playerStatusMap.set("PABLO PINTOR", { isDropped: false, wins: 4 });
-                    
                     // Process all players from scraped data (active and dropped)
                     const allPlayers = [...data.standings, ...(data.droppedPlayers || [])];
                     allPlayers.forEach(entry => {
