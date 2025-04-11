@@ -110,17 +110,17 @@
     <script>
         // Define the fixed list of players with their exact scraped names
         const PLAYERS_MAPPING = {
-            "ALEX CHITU": ["Alex Chitu"],
-            "ANTON CID-MEIJAS": ["Anton Cid-Meijas"],
-            "SHAHMIR SAMEE": ["Shahmir Samee"],
-            "JASON ROLFE": ["Jason Rolfe"],
-            "SAMUEL BRABEN": ["Samuel Braben"],
-            "PIERRE-NICOLAS PERRIN": ["Pierre-Nicolas Perrin"],
-            "THOMAS BATTAGLIA": ["Thomas Battaglia"],
-            "WILLIAM PISTEL": ["William Pistel"],
-            "ANTHONY VERO": ["Anthony Vero"],
-            "MICHAEL METALLO": ["Michael Metallo"],
-            "FILIPE LIMA CARDOSO": ["Filipe Lima Cardoso"]
+            "ALEX CHITU": ["alex chitu"],
+            "ANTON CID-MEIJAS": ["anton cid-meijas"],
+            "SHAHMIR SAMEE": ["shahmir samee"],
+            "JASON ROLFE": ["jason rolfe"],
+            "SAMUEL BRABEN": ["samuel braben"],
+            "PIERRE-NICOLAS PERRIN": ["pierre-nicolas perrin"],
+            "THOMAS BATTAGLIA": ["thomas battaglia"],
+            "WILLIAM PISTEL": ["william pistel"],
+            "ANTHONY VERO": ["Anthony Vero Cerenzio"],
+            "MICHAEL METALLO": ["MICHAEL METALLO"],
+            "FILIPE LIMA CARDOSO": ["filipe lima cardoso"]
         };
 
         function normalizePlayerName(name) {
@@ -139,12 +139,16 @@
         }
 
         function createPlayerEntry(player, record) {
-            const className = player === "JACOB CLEMENTS" ? 
-                `bottom-player-1` : 
+            const className = player === "MICHAEL METALLO" || player === "FILIPE LIMA CARDOSO" ? 
+                `bottom-player-${player === "MICHAEL METALLO" ? 1 : 2}` : 
                 `main-player`;
             
-            const nameClass = player === "JACOB CLEMENTS" ? 
-                'player-name jacob-clements' : 
+            const nameClass = player === "PIERRE-NICOLAS PERRIN" ? 
+                'player-name pierre-nicolas' : 
+                player === "ANTHONY VERO" ? 
+                'player-name anthony-vero' : 
+                player === "FILIPE LIMA CARDOSO" ? 
+                'player-name filipe' : 
                 'player-name';
                 
             return `
@@ -203,6 +207,12 @@
 
                         html += createPlayerEntry(playerName, record);
                     });
+
+                    // Add team name and region
+                    html += `
+                        <div class="team-name">TEAM SIGIL</div>
+                        <div class="region">INTERNATIONAL</div>
+                    `;
 
                     container.innerHTML = html;
                 }
