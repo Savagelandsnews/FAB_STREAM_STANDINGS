@@ -374,9 +374,16 @@
             // Create hero image
             const heroImage = document.createElement('img');
             heroImage.className = 'hero-image';
-            heroImage.src = hero ? `/static/heroes/${hero.toLowerCase().replace(/\s+/g, '-')}.png` : '/static/nohero.png';
+            const heroImagePath = hero ? `/static/Heroes/${getHeroImage(hero)}` : '/static/nohero.png';
+            heroImage.src = heroImagePath;
             heroImage.alt = hero || 'No Hero';
-            heroImage.onerror = function() { this.src = '/static/nohero.png'; };
+            // Only set onerror if we're not already using nohero.png
+            if (hero) {
+                heroImage.onerror = function() { 
+                    this.onerror = null; // Prevent infinite loop
+                    this.src = '/static/nohero.png';
+                };
+            }
             row.appendChild(heroImage);
 
             // Create the rank frame
