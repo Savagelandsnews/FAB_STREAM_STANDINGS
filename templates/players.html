@@ -174,16 +174,9 @@
         }
 
         function createPlayerEntry(player, record) {
-            const className = player.type === "main" ? 
-                `main-player` : 
-                `bottom-player-${player.position}`;
-            
-            const nameClass = player.className ? 
-                `player-name ${player.className}` : 
-                'player-name';
-
+            // Create the player frame container
             const entry = document.createElement('div');
-            entry.className = className;
+            entry.className = 'player-frame';
 
             // Create hero image if hero is specified
             if (player.hero && heroImages[player.hero]) {
@@ -207,7 +200,7 @@
             }
 
             const nameElement = document.createElement('div');
-            nameElement.className = nameClass;
+            nameElement.className = 'player-name';
             nameElement.textContent = player.name;
             entry.appendChild(nameElement);
 
@@ -232,7 +225,8 @@
                 
                 if (data.standings || data.droppedPlayers) {
                     const container = document.getElementById('content');
-                    let html = '';
+                    // Clear existing content before adding new entries
+                    container.innerHTML = '';
 
                     // Create a map to store player status and data
                     const playerStatusMap = new Map();
