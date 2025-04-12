@@ -177,10 +177,9 @@
             position: absolute;
             width: 64px;
             height: 64px;
-            left: 596px;
+            left: 607px;
             top: 5px;
             filter: drop-shadow(0px 0px 4px rgba(0, 0, 0, 0.25));
-            object-fit: contain;
         }
 
         .player-score {
@@ -377,13 +376,22 @@
             if (hero && heroImages[hero]) {
                 heroImage.src = `/static/Heroes/${heroImages[hero]}`;
                 heroImage.onerror = function() {
-                    this.style.display = 'none';  // Hide the image if it fails to load
+                    this.style.display = 'none';
                 };
             } else {
-                heroImage.style.display = 'none';  // Hide the image if no hero or mapping
+                heroImage.style.display = 'none';
             }
-            heroImage.alt = '';  // Empty alt text to prevent text from showing
+            heroImage.alt = '';
             row.appendChild(heroImage);
+
+            // Create flag image if player has flag data
+            if (player.flag) {
+                const flagImage = document.createElement('img');
+                flagImage.className = 'flag';
+                flagImage.src = `https://flagsapi.com/${player.flag}/flat/64.png`;
+                flagImage.alt = '';
+                row.appendChild(flagImage);
+            }
 
             // Create the rank frame
             const rankFrame = document.createElement('div');
@@ -402,7 +410,7 @@
             // Create player name element
             const nameElement = document.createElement('div');
             nameElement.className = 'player-name';
-            nameElement.textContent = player;
+            nameElement.textContent = player.name || player;  // Handle both object and string
             mainFrame.appendChild(nameElement);
 
             // Create score element
@@ -449,7 +457,10 @@
                     // Add each player entry
                     top10Standings.forEach((entry, index) => {
                         const playerEntry = createPlayerEntry(
-                            entry.player,
+                            {
+                                name: entry.player,
+                                flag: entry.flag
+                            },
                             entry.hero,
                             entry.wins,
                             entry.rank
