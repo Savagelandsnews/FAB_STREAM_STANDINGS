@@ -72,6 +72,25 @@
             text-align: right;
             color: #000000;
         }
+
+        .flag {
+            position: absolute;
+            width: 64px;
+            height: 64px;
+            left: 607px;
+            top: 5px;
+            filter: drop-shadow(0px 0px 4px rgba(0, 0, 0, 0.25));
+        }
+
+        /* Hero image */
+        .hero-image {
+            position: absolute;
+            width: 124px;
+            height: 558px;
+            left: 610px;
+            top: -242px;
+            object-fit: contain;
+        }
     </style>
 </head>
 <body>
@@ -109,13 +128,95 @@
             return null;
         }
 
+        // Hero name to image mapping
+        const heroImages = {
+            'Kayo, Armed and Dangerous': 'Kayo.png',
+            'Dorinthea Ironsong': 'Dori.png',
+            'Dromai, Ash Artist': 'Kayo.png',
+            'Kano, Dracai of Aether': 'Kano.png',
+            'Kassai of the Golden Sand': 'Kassai.png',
+            'Ser Boltyn, Breaker of Dawn': 'Boltyn.png',
+            'Rhinar, Reckless Rampage': 'Rhinar.png',
+            'Bravo, Showstopper': 'Bravo.png',
+            'Victor Goldmane, High and Mighty': 'Victor.png',
+            'Azalea, Ace in the Hole': 'Azalea.png',
+            'Dash, Inventor Extraordinaire': 'Dash.png',
+            'Levia, Shadowborn Abomination': 'Levia.png',
+            'Katsu, the Wanderer': 'Katsu.png',
+            'Prism, Awakener of Sol': 'Prism.png',
+            'Uzuri, Switchblade': 'Uzuri.png',
+            'Teklovossen, Esteemed Magnate': 'Teklo.png',
+            'Fai, Rising Rebellion': 'Fai.png',
+            'Arakni, Huntsman': 'Arakni Huntsman.png',
+            'Arakni, Marionette': 'Arakni Marionette.png',
+            'Vynnset, Iron Maiden': 'Vynnset.png',
+            'Arakni, 5L!p3d 7hRu 7h3 cR4X': 'arakni slipped thru the cracks.png',
+            'Olympia Prized Fighter': 'Olympia.png',
+            'Oscilio Constella Intelligence': 'Oscilio.png',
+            'Riptide, Lurker of the Deep': 'Riptide.png',
+            'Florian, Rotwood Harbinger': 'Florian.png',
+            'Ira, Crimson Haze': 'Ira.png',
+            'Jarl Vetreiði': 'Jarl.png',
+            'Enigma, Ledger of Ancestry': 'Enigma.png',
+            'Fang, Dracai of Blades': 'Fang.png',
+            'Cindra, Dracai of Retribution': 'Cindra.png',
+            'Dash I/O': 'Dash_IO.png',
+            'Betsy, Skin in the Game': 'Betsy.png',
+            'Aurora, Shooting Star': 'Aurora.png',
+            'Maxx "The Hype" Nitro': 'Maxx.png',
+            'Nuu, Alluring Desire': 'Nuu.png',
+            'Zen, Tamer of Purpose': 'Zen.png',
+            'Verdance, Thorn of the Rose': 'Verdance.png'
+        };
+
+        function getHeroImage(heroName) {
+            return heroImages[heroName] || 'default.jpg';
+        }
+
         function createPlayerEntry(player, record) {
-            return `
-                <div class="player-frame">
-                    <div class="player-name">${player.name}</div>
-                    <div class="player-score">${record}</div>
-                </div>
-            `;
+            const className = player.type === "main" ? 
+                `main-player` : 
+                `bottom-player-${player.position}`;
+            
+            const nameClass = player.className ? 
+                `player-name ${player.className}` : 
+                'player-name';
+
+            const entry = document.createElement('div');
+            entry.className = className;
+
+            // Create hero image if hero is specified
+            if (player.hero && heroImages[player.hero]) {
+                const heroImage = document.createElement('img');
+                heroImage.className = 'hero-image';
+                heroImage.src = `/static/Heroes/${heroImages[player.hero]}`;
+                heroImage.alt = '';
+                heroImage.onerror = function() {
+                    this.style.display = 'none';
+                };
+                entry.appendChild(heroImage);
+            }
+
+            // Create flag image if flag is specified
+            if (player.flag) {
+                const flagImage = document.createElement('img');
+                flagImage.className = 'flag';
+                flagImage.src = `https://flagsapi.com/${player.flag}/flat/64.png`;
+                flagImage.alt = '';
+                entry.appendChild(flagImage);
+            }
+
+            const nameElement = document.createElement('div');
+            nameElement.className = nameClass;
+            nameElement.textContent = player.name;
+            entry.appendChild(nameElement);
+
+            const scoreElement = document.createElement('div');
+            scoreElement.className = 'player-score';
+            scoreElement.textContent = record;
+            entry.appendChild(scoreElement);
+
+            return entry;
         }
 
         async function updateStandings() {
@@ -142,8 +243,11 @@
                         const matchedPlayer = findPlayerMatch(entry.player, PLAYERS);
                         if (matchedPlayer) {
                             playerStatusMap.set(matchedPlayer.name, {
+                                ...matchedPlayer,
                                 isDropped: entry.isDropped || false,
-                                wins: parseInt(entry.wins)
+                                wins: parseInt(entry.wins),
+                                flag: entry.flag,
+                                hero: entry.hero
                             });
                         }
                     });
@@ -162,12 +266,15 @@
                                 record = `${wins}-${losses}`;
                             }
                             console.log(`${player.name}: ${record} (dropped: ${playerData.isDropped})`);
+                            
+                            // Add flag and hero data to player object
+                            player.flag = playerData.flag;
+                            player.hero = playerData.hero;
                         }
 
-                        html += createPlayerEntry(player, record);
+                        const playerEntry = createPlayerEntry(player, record);
+                        container.appendChild(playerEntry);
                     });
-
-                    container.innerHTML = html;
                 }
             } catch (error) {
                 console.error('Error updating standings:', error);
