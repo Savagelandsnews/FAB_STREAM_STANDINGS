@@ -307,14 +307,19 @@
             const previewFrame = document.getElementById('previewFrame');
             const previewContent = document.querySelector('.preview-content');
             const scaleIndicator = document.getElementById('scaleValue');
+            const playerNameColor = document.getElementById('playerNameColor').value;
+            const playerScoreColor = document.getElementById('playerScoreColor').value;
             
             // Get all player names
             const playerNames = Array.from(document.querySelectorAll('.player-name-input'))
                 .map(input => input.value.trim())
                 .filter(name => name !== '');
 
-            // Update the preview URL with the player names
-            previewFrame.src = `/players?players=${encodeURIComponent(JSON.stringify(playerNames))}`;
+            // Add timestamp to force refresh
+            const timestamp = new Date().getTime();
+            
+            // Update the preview URL with the player names, colors, and timestamp
+            previewFrame.src = `/players?players=${encodeURIComponent(JSON.stringify(playerNames))}&playerNameColor=${encodeURIComponent(playerNameColor)}&playerScoreColor=${encodeURIComponent(playerScoreColor)}&t=${timestamp}`;
             
             // Calculate and apply scaling
             function updateScale() {
@@ -408,9 +413,8 @@
                 if (response.ok) {
                     statusDiv.textContent = 'Players background uploaded successfully!';
                     statusDiv.className = 'upload-status success';
-                    // Force the preview iframe to reload to show the new background
-                    const previewFrame = document.getElementById('previewFrame');
-                    previewFrame.src = previewFrame.src;
+                    // Update preview with new background
+                    updatePreview();
                 } else {
                     statusDiv.textContent = data.message || 'Failed to upload players background';
                     statusDiv.className = 'upload-status error';
