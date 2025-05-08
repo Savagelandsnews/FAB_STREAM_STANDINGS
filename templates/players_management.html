@@ -398,7 +398,7 @@
             statusDiv.style.display = 'block';
 
             try {
-                const response = await fetch('/upload-background', {
+                const response = await fetch('/upload-players-background', {
                     method: 'POST',
                     body: formData
                 });
@@ -406,15 +406,17 @@
                 const data = await response.json();
                 
                 if (response.ok) {
-                    statusDiv.textContent = 'Background uploaded successfully!';
+                    statusDiv.textContent = 'Players background uploaded successfully!';
                     statusDiv.className = 'upload-status success';
-                    updatePreview();
+                    // Force the preview iframe to reload to show the new background
+                    const previewFrame = document.getElementById('previewFrame');
+                    previewFrame.src = previewFrame.src;
                 } else {
-                    statusDiv.textContent = data.message || 'Failed to upload background';
+                    statusDiv.textContent = data.message || 'Failed to upload players background';
                     statusDiv.className = 'upload-status error';
                 }
             } catch (error) {
-                statusDiv.textContent = 'Error uploading background';
+                statusDiv.textContent = 'Error uploading players background';
                 statusDiv.className = 'upload-status error';
             }
 
