@@ -249,8 +249,39 @@
 
         .customize-description {
             margin-top: 10px;
-            color: #aaa;
-            font-size: 0.9em;
+            color: #ccc;
+        }
+
+        .players-management {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #333;
+            border-radius: 4px;
+        }
+
+        .players-management h2 {
+            color: #00aa00;
+            margin-top: 0;
+        }
+
+        .manage-players-button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #00aa00;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+
+        .manage-players-button:hover {
+            background-color: #008800;
+        }
+
+        .players-description {
+            margin-top: 10px;
+            color: #ccc;
         }
     </style>
 </head>
@@ -289,6 +320,12 @@
             <p>Customize the appearance of your stream overlay:</p>
             <a href="/stream-management" class="customize-button">Customize Stream View</a>
             <p class="customize-description">Change colors, upload background, and preview changes in real-time</p>
+        </div>
+
+        <div class="players-management">
+            <h2>Players to Watch</h2>
+            <a href="/players-management" class="manage-players-button">Manage Players to Watch</a>
+            <p class="players-description">Add up to 10 players to track their standings, records, and stats in real-time.</p>
         </div>
 
         <div class="stream-info">
