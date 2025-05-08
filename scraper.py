@@ -156,8 +156,7 @@ async def get_standings(source: str = None):
     
     try:
         logger.info(f"Fetching standings from: {current_url}")
-        auth = aiohttp.BasicAuth(AUTH_USERNAME, AUTH_PASSWORD)
-        async with aiohttp.ClientSession(auth=auth) as session:
+        async with aiohttp.ClientSession() as session:
             async with session.get(current_url) as response:
                 if response.status != 200:
                     logger.error(f"Failed to fetch standings: HTTP {response.status}")
@@ -256,10 +255,9 @@ async def update_url(url: str = Form(...)):
     logger.info(f"Updating URL to: {url}")
     current_url = url
     
-    # Validate the URL works with authentication
+    # Validate the URL works
     try:
-        auth = aiohttp.BasicAuth(AUTH_USERNAME, AUTH_PASSWORD)
-        async with aiohttp.ClientSession(auth=auth) as session:
+        async with aiohttp.ClientSession() as session:
             async with session.get(url) as response:
                 if response.status != 200:
                     logger.error(f"URL validation failed with status {response.status}")
