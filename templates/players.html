@@ -99,33 +99,18 @@
     </div>
 
     <script>
-        // Define the fixed list of players with their exact scraped names
-        const PLAYERS = [
-            { type: "player", position: 1, name: "SHING TSANG", scrapedNames: ["Shing Tsang"] },
-            { type: "player", position: 2, name: "CHRISTOPHER IAALI", scrapedNames: ["Christopher Iaali"] },
-            { type: "player", position: 3, name: "ROB CATTON", scrapedNames: ["Rob Catton"] },
-            { type: "player", position: 4, name: "SHAHMIR SAMEE", scrapedNames: ["Shahmir Samee"] },
-            { type: "player", position: 5, name: "ANDREW ROTHERMEL", scrapedNames: ["Andrew Rothermel"] },
-            { type: "player", position: 6, name: "YUKI LEE BENDER", scrapedNames: ["Yuki Lee Bender"] },
-            { type: "player", position: 7, name: "SAM SUTHERLAND", scrapedNames: ["Sam Sutherland"] },
-            { type: "player", position: 8, name: "PUDDING TAM", scrapedNames: ["Pudding Tam"] },
-            { type: "player", position: 9, name: "JUSTIN CU", scrapedNames: ["Justin Cu"] },
-            { type: "player", position: 10, name: "ALLEN LAU", scrapedNames: ["Allen Lau"] }
-        ];
+        // Get the list of players from the template context
+        const WATCHED_PLAYERS = {{ players|tojson|safe }};
 
         function normalizePlayerName(name) {
             return name.trim();
         }
 
-        function findPlayerMatch(scrapedName, players) {
+        function findPlayerMatch(scrapedName) {
             scrapedName = normalizePlayerName(scrapedName);
-            for (const player of players) {
-                if (player.scrapedNames.includes(scrapedName)) {
-                    console.log(`Found match: ${scrapedName} -> ${player.name}`);
-                    return player;
-                }
-            }
-            return null;
+            return WATCHED_PLAYERS.find(function(player) {
+                return player.toLowerCase() === scrapedName.toLowerCase();
+            });
         }
 
         // Hero name to image mapping
@@ -219,8 +204,8 @@
                 const roundData = await roundResponse.json();
                 const currentRound = roundData.round;
 
-                // Fetch standings with source parameter
-                const standingsResponse = await fetch('/standings?source=players');
+                // Fetch standings
+                const standingsResponse = await fetch('/standings');
                 const data = await standingsResponse.json();
                 
                 if (data.standings || data.droppedPlayers) {
@@ -233,11 +218,11 @@
 
                     // Process all players (both active and dropped)
                     const allPlayers = [...data.standings, ...(data.droppedPlayers || [])];
-                    allPlayers.forEach(entry => {
-                        const matchedPlayer = findPlayerMatch(entry.player, PLAYERS);
-                        if (matchedPlayer) {
-                            playerStatusMap.set(matchedPlayer.name, {
-                                ...matchedPlayer,
+                    allPlayers.forEach(function(entry) {
+                        const matchedName = findPlayerMatch(entry.player);
+                        if (matchedName) {
+                            playerStatusMap.set(matchedName, {
+                                name: matchedName,
                                 isDropped: entry.isDropped || false,
                                 wins: parseInt(entry.wins),
                                 flag: entry.flag,
@@ -246,9 +231,9 @@
                         }
                     });
 
-                    // Generate entries for each player in our fixed order
-                    PLAYERS.forEach(player => {
-                        const playerData = playerStatusMap.get(player.name);
+                    // Generate entries for each watched player
+                    WATCHED_PLAYERS.forEach(function(playerName) {
+                        const playerData = playerStatusMap.get(playerName);
                         let record = '0-0';
                         
                         if (playerData) {
@@ -259,15 +244,15 @@
                                 const losses = wins >= currentRound ? 0 : currentRound - wins;
                                 record = `${wins}-${losses}`;
                             }
-                            console.log(`${player.name}: ${record} (dropped: ${playerData.isDropped})`);
+                            console.log(`${playerName}: ${record} (dropped: ${playerData.isDropped})`);
                             
-                            // Add flag and hero data to player object
-                            player.flag = playerData.flag;
-                            player.hero = playerData.hero;
+                            const playerEntry = createPlayerEntry(playerData, record);
+                            container.appendChild(playerEntry);
+                        } else {
+                            // Create entry for player not found in standings
+                            const playerEntry = createPlayerEntry({ name: playerName }, 'N/A');
+                            container.appendChild(playerEntry);
                         }
-
-                        const playerEntry = createPlayerEntry(player, record);
-                        container.appendChild(playerEntry);
                     });
                 }
             } catch (error) {

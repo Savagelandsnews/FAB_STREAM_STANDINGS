@@ -81,6 +81,9 @@ def save_settings(settings):
 # Get current settings
 current_settings = load_settings()
 
+# Store the list of players to watch
+WATCHED_PLAYERS = []
+
 @app.get("/")
 async def read_root(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
@@ -125,9 +128,31 @@ async def read_sigil(request: Request):
 async def read_vampires(request: Request):
     return templates.TemplateResponse("vampires.html", {"request": request})
 
+@app.get("/players-management")
+async def read_players_management(request: Request):
+    return templates.TemplateResponse("players_management.html", {"request": request})
+
+@app.post("/save-players")
+async def save_players(players: dict):
+    global WATCHED_PLAYERS
+    WATCHED_PLAYERS = players.get("players", [])
+    return {"message": "Players saved successfully"}
+
 @app.get("/players")
-async def read_players(request: Request):
-    return templates.TemplateResponse("players.html", {"request": request})
+async def read_players(request: Request, players: str = None):
+    # If players are provided in the query, use those
+    if players:
+        try:
+            player_list = json.loads(players)
+        except:
+            player_list = WATCHED_PLAYERS
+    else:
+        player_list = WATCHED_PLAYERS
+
+    return templates.TemplateResponse("players.html", {
+        "request": request,
+        "players": player_list
+    })
 
 class RowRange(BaseModel):
     start: int
