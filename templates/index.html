@@ -219,6 +219,39 @@
         .view-players:hover {
             color: #008800; /* Darker green on hover */
         }
+
+        .stream-customization {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #333;
+            border-radius: 4px;
+        }
+
+        .stream-customization h2 {
+            color: #00aa00;
+            margin-top: 0;
+        }
+
+        .customize-button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #00aa00;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+
+        .customize-button:hover {
+            background-color: #008800;
+        }
+
+        .customize-description {
+            margin-top: 10px;
+            color: #aaa;
+            font-size: 0.9em;
+        }
     </style>
 </head>
 <body>
@@ -249,6 +282,13 @@
                 <button class="row-button" data-start="30" data-end="40">Rows 31-40</button>
                 <button class="row-button" data-start="40" data-end="50">Rows 41-50</button>
             </div>
+        </div>
+
+        <div class="stream-customization">
+            <h2>Stream Customization</h2>
+            <p>Customize the appearance of your stream overlay:</p>
+            <a href="/stream-management" class="customize-button">Customize Stream View</a>
+            <p class="customize-description">Change colors, upload background, and preview changes in real-time</p>
         </div>
 
         <div class="stream-info">
