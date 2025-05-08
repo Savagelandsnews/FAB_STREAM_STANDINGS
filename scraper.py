@@ -1,4 +1,4 @@
-﻿from fastapi import FastAPI, HTTPException, Form, Request
+﻿from fastapi import FastAPI, HTTPException, Form, Request, File, UploadFile
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -9,6 +9,8 @@ from bs4 import BeautifulSoup
 import logging
 import os
 from pathlib import Path
+import json
+import shutil
 
 # Configure logging
 logging.basicConfig(
@@ -44,17 +46,64 @@ CACHE_DURATION = 30  # seconds
 # Add to the global variables at the top
 current_round = 1
 
-# Add authentication credentials
-AUTH_USERNAME = "legendstory"
-AUTH_PASSWORD = "carpentry-evidence-unicycle"
+# Settings file path
+SETTINGS_FILE = "settings.json"
+
+# Default settings
+DEFAULT_SETTINGS = {
+    "rankColor": "#CBA655",
+    "playerNameColor": "#CBA655",
+    "playerScoreColor": "#000000",
+    "roundTitleColor": "#CBA655"
+}
+
+# Load settings from file
+def load_settings():
+    try:
+        if os.path.exists(SETTINGS_FILE):
+            with open(SETTINGS_FILE, 'r') as f:
+                return json.load(f)
+        return DEFAULT_SETTINGS
+    except Exception as e:
+        logger.error(f"Error loading settings: {e}")
+        return DEFAULT_SETTINGS
+
+# Save settings to file
+def save_settings(settings):
+    try:
+        with open(SETTINGS_FILE, 'w') as f:
+            json.dump(settings, f)
+        return True
+    except Exception as e:
+        logger.error(f"Error saving settings: {e}")
+        return False
+
+# Get current settings
+current_settings = load_settings()
 
 @app.get("/")
 async def read_root(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
+@app.get("/stream-management")
+async def stream_management(request: Request):
+    return templates.TemplateResponse("stream_management.html", {"request": request})
+
 @app.get("/stream")
 async def read_stream(request: Request):
-    return templates.TemplateResponse("stream.html", {"request": request})
+    # Get color parameters from query string
+    rank_color = request.query_params.get("rankColor", current_settings["rankColor"])
+    player_name_color = request.query_params.get("playerNameColor", current_settings["playerNameColor"])
+    player_score_color = request.query_params.get("playerScoreColor", current_settings["playerScoreColor"])
+    round_title_color = request.query_params.get("roundTitleColor", current_settings["roundTitleColor"])
+    
+    return templates.TemplateResponse("stream.html", {
+        "request": request,
+        "rankColor": rank_color,
+        "playerNameColor": player_name_color,
+        "playerScoreColor": player_score_color,
+        "roundTitleColor": round_title_color
+    })
 
 @app.get("/bluepitch")
 async def read_bluepitch(request: Request):
@@ -242,6 +291,41 @@ async def update_round(round_data: dict):
 async def get_round():
     global current_round
     return JSONResponse(content={"round": current_round})
+
+@app.post("/upload-background")
+async def upload_background(background: UploadFile = File(...)):
+    try:
+        # Save the uploaded file
+        file_path = Path("static/background.png")
+        with file_path.open("wb") as buffer:
+            shutil.copyfileobj(background.file, buffer)
+        return JSONResponse(content={"success": True, "message": "Background uploaded successfully"})
+    except Exception as e:
+        logger.error(f"Error uploading background: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "message": f"Error uploading background: {str(e)}"}
+        )
+
+@app.post("/save-settings")
+async def save_stream_settings(settings: dict):
+    global current_settings
+    try:
+        # Update current settings
+        current_settings.update(settings)
+        if save_settings(current_settings):
+            return JSONResponse(content={"success": True, "message": "Settings saved successfully"})
+        else:
+            return JSONResponse(
+                status_code=500,
+                content={"success": False, "message": "Failed to save settings"}
+            )
+    except Exception as e:
+        logger.error(f"Error saving settings: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "message": f"Error saving settings: {str(e)}"}
+        )
 
 if __name__ == "__main__":
     import uvicorn
