@@ -238,23 +238,34 @@
                 return;
             }
 
+            // Check file type
+            if (!file.type.startsWith('image/')) {
+                showStatus('Please select an image file', false);
+                return;
+            }
+
             const formData = new FormData();
             formData.append('background', file);
 
             try {
+                showStatus('Uploading background...', true);
                 const response = await fetch('/upload-background', {
                     method: 'POST',
                     body: formData
                 });
 
+                const result = await response.json();
+                
                 if (response.ok) {
                     showStatus('Background uploaded successfully!', true);
-                    updatePreview();
+                    // Force iframe to reload to show new background
+                    const previewFrame = document.getElementById('previewFrame');
+                    previewFrame.src = previewFrame.src;
                 } else {
-                    showStatus('Failed to upload background', false);
+                    showStatus(`Failed to upload background: ${result.message}`, false);
                 }
             } catch (error) {
-                showStatus('Error uploading background', false);
+                showStatus(`Error uploading background: ${error.message}`, false);
             }
         }
 

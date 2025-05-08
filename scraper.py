@@ -293,10 +293,21 @@ async def get_round():
 @app.post("/upload-background")
 async def upload_background(background: UploadFile = File(...)):
     try:
+        # Ensure static directory exists
+        static_dir = Path("static")
+        static_dir.mkdir(exist_ok=True)
+        
         # Save the uploaded file
-        file_path = Path("static/background.png")
+        file_path = static_dir / "background.png"
+        
+        # Read the file content
+        content = await background.read()
+        
+        # Save the file
         with file_path.open("wb") as buffer:
-            shutil.copyfileobj(background.file, buffer)
+            buffer.write(content)
+            
+        logger.info(f"Background image uploaded successfully to {file_path}")
         return JSONResponse(content={"success": True, "message": "Background uploaded successfully"})
     except Exception as e:
         logger.error(f"Error uploading background: {e}")
