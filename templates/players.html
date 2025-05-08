@@ -50,11 +50,7 @@
             font-weight: 400;
             font-size: 56px;
             line-height: 120%;
-            background: linear-gradient(180deg, #CBA655 0%, #F0EBB6 24.93%, #DBB45F 57.57%, #B08F49 118.71%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            text-fill-color: transparent;
+            color: {{ playerNameColor|default('#CBA655') }};
         }
 
         /* Player score styling */
@@ -70,7 +66,7 @@
             font-size: 56px;
             line-height: 120%;
             text-align: right;
-            color: #000000;
+            color: {{ playerScoreColor|default('#000000') }};
         }
 
         .flag {

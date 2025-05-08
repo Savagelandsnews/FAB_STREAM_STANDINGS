@@ -140,6 +140,90 @@
             background: #f44336;
             margin-top: 5px;
         }
+
+        .players-description {
+            margin-top: 10px;
+            color: #ccc;
+        }
+
+        .color-settings {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #333;
+            border-radius: 4px;
+        }
+
+        .color-settings h3 {
+            color: #00aa00;
+            margin-top: 0;
+        }
+
+        .color-input-group {
+            margin-bottom: 15px;
+        }
+
+        .color-input-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #ccc;
+        }
+
+        .color-input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #4a4a4a;
+            border-radius: 4px;
+            background-color: #1a1a1a;
+            color: #fff;
+            font-size: 14px;
+        }
+
+        .background-upload {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #333;
+            border-radius: 4px;
+        }
+
+        .background-upload h3 {
+            color: #00aa00;
+            margin-top: 0;
+        }
+
+        .upload-input {
+            display: none;
+        }
+
+        .upload-label {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #4a4a4a;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .upload-label:hover {
+            background-color: #666;
+        }
+
+        .upload-status {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .upload-status.success {
+            background-color: rgba(0, 170, 0, 0.2);
+            color: #00aa00;
+        }
+
+        .upload-status.error {
+            background-color: rgba(255, 0, 0, 0.2);
+            color: #ff4444;
+        }
     </style>
 </head>
 <body>
@@ -153,6 +237,26 @@
                 <button class="add-player-btn" onclick="addPlayerInput()">Add Player</button>
                 <button onclick="savePlayers()">Save Players</button>
                 <div id="saveStatus" class="save-status"></div>
+            </div>
+
+            <div class="color-settings">
+                <h3>Color Settings</h3>
+                <div class="color-input-group">
+                    <label for="playerNameColor">Player Name Color</label>
+                    <input type="text" id="playerNameColor" class="color-input" value="#CBA655" placeholder="#RRGGBB">
+                </div>
+                <div class="color-input-group">
+                    <label for="playerScoreColor">Player Score Color</label>
+                    <input type="text" id="playerScoreColor" class="color-input" value="#000000" placeholder="#RRGGBB">
+                </div>
+                <button onclick="saveColors()">Save Colors</button>
+            </div>
+
+            <div class="background-upload">
+                <h3>Background Image</h3>
+                <input type="file" id="backgroundUpload" class="upload-input" accept="image/*" onchange="uploadBackground(this.files[0])">
+                <label for="backgroundUpload" class="upload-label">Choose Background Image</label>
+                <div id="uploadStatus" class="upload-status"></div>
             </div>
         </div>
 
@@ -253,6 +357,70 @@
             } catch (error) {
                 showStatus('Error saving players', false);
             }
+        }
+
+        async function saveColors() {
+            const playerNameColor = document.getElementById('playerNameColor').value;
+            const playerScoreColor = document.getElementById('playerScoreColor').value;
+
+            try {
+                const response = await fetch('/save-settings', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        playerNameColor,
+                        playerScoreColor
+                    })
+                });
+
+                if (response.ok) {
+                    showStatus('Colors saved successfully!', true);
+                    updatePreview();
+                } else {
+                    showStatus('Failed to save colors', false);
+                }
+            } catch (error) {
+                showStatus('Error saving colors', false);
+            }
+        }
+
+        async function uploadBackground(file) {
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('background', file);
+
+            const statusDiv = document.getElementById('uploadStatus');
+            statusDiv.textContent = 'Uploading...';
+            statusDiv.className = 'upload-status';
+            statusDiv.style.display = 'block';
+
+            try {
+                const response = await fetch('/upload-background', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    statusDiv.textContent = 'Background uploaded successfully!';
+                    statusDiv.className = 'upload-status success';
+                    updatePreview();
+                } else {
+                    statusDiv.textContent = data.message || 'Failed to upload background';
+                    statusDiv.className = 'upload-status error';
+                }
+            } catch (error) {
+                statusDiv.textContent = 'Error uploading background';
+                statusDiv.className = 'upload-status error';
+            }
+
+            setTimeout(() => {
+                statusDiv.style.display = 'none';
+            }, 3000);
         }
 
         function showStatus(message, isSuccess) {

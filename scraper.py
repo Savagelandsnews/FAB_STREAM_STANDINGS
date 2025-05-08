@@ -149,9 +149,15 @@ async def read_players(request: Request, players: str = None):
     else:
         player_list = WATCHED_PLAYERS
 
+    # Get color parameters from query string
+    player_name_color = request.query_params.get("playerNameColor", current_settings.get("playerNameColor", "#CBA655"))
+    player_score_color = request.query_params.get("playerScoreColor", current_settings.get("playerScoreColor", "#000000"))
+
     return templates.TemplateResponse("players.html", {
         "request": request,
-        "players": player_list
+        "players": player_list,
+        "playerNameColor": player_name_color,
+        "playerScoreColor": player_score_color
     })
 
 class RowRange(BaseModel):
