@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Team Standings</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            width: 1920px;
+            height: 1080px;
+            background-image: url('/static/teams/{{ team_id }}/background.png'), url('/static/Player.png');
+            background-size: 1920px 1080px;
+            background-position: top left;
+            background-repeat: no-repeat;
+            overflow: hidden;
+        }
+
+        /* Player frames */
+        .player-frame {
+            position: absolute;
+            width: 788px;
+            height: 74px;
+            left: 566px;
+        }
+
+        /* Player positions - dynamically set based on team size */
+        {% for i in range(team_size) %}
+        .player-frame:nth-child({{ i + 1 }}) { 
+            top: {{ 178 + (i * 89) }}px; 
+        }
+        {% endfor %}
+
+        /* Player name styling */
+        .player-name {
+            position: absolute;
+            width: 387px;
+            height: 67px;
+            left: 144px;
+            top: 5px;
+            font-family: 'Bebas Neue';
+            font-style: normal;
+            font-weight: 400;
+            font-size: 56px;
+            line-height: 67px;
+            color: {{ current_settings.playerNameColor }};
+            white-space: nowrap;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+        }
+
+        /* Player score styling */
+        .player-score {
+            position: absolute;
+            width: 143px;
+            height: 67px;
+            left: 625px;
+            top: 5px;
+            font-family: 'Bebas Neue';
+            font-style: normal;
+            font-weight: 400;
+            font-size: 56px;
+            line-height: 67px;
+            text-align: right;
+            color: {{ current_settings.playerScoreColor }};
+        }
+
+        .flag {
+            position: absolute;
+            width: 64px;
+            height: 64px;
+            left: 607px;
+            top: 5px;
+            filter: drop-shadow(0px 0px 4px rgba(0, 0, 0, 0.25));
+        }
+
+        /* Hero image */
+        .hero-image {
+            position: absolute;
+            width: 124px;
+            height: 558px;
+            left: 0px;
+            top: -242px;
+            object-fit: contain;
+        }
+    </style>
+</head>
+<body>
+    <div id="content">
+        <!-- Player entries will be inserted here dynamically -->
+    </div>
+
+    <script>
+        // Get the list of players from the template context
+        const TEAM_PLAYERS = {{ players|tojson|safe }};
+
+        function normalizePlayerName(name) {
+            return name.trim();
+        }
+
+        function findPlayerMatch(scrapedName) {
+            scrapedName = normalizePlayerName(scrapedName);
+            return TEAM_PLAYERS.find(function(player) {
+                return player.toLowerCase() === scrapedName.toLowerCase();
+            });
+        }
+
+        // Hero name to image mapping
+        const heroImages = {
+            'Kayo, Armed and Dangerous': 'Kayo.png',
+            'Dorinthea Ironsong': 'Dori.png',
+            'Dromai, Ash Artist': 'Kayo.png',
+            'Kano, Dracai of Aether': 'Kano.png',
+            'Kassai of the Golden Sand': 'Kassai.png',
+            'Ser Boltyn, Breaker of Dawn': 'Boltyn.png',
+            'Rhinar, Reckless Rampage': 'Rhinar.png',
+            'Bravo, Showstopper': 'Bravo.png',
+            'Victor Goldmane, High and Mighty': 'Victor.png',
+            'Azalea, Ace in the Hole': 'Azalea.png',
+            'Dash, Inventor Extraordinaire': 'Dash.png',
+            'Levia, Shadowborn Abomination': 'Levia.png',
+            'Katsu, the Wanderer': 'Katsu.png',
+            'Prism, Awakener of Sol': 'Prism.png',
+            'Uzuri, Switchblade': 'Uzuri.png',
+            'Teklovossen, Esteemed Magnate': 'Teklo.png',
+            'Fai, Rising Rebellion': 'Fai.png',
+            'Arakni, Huntsman': 'Arakni Huntsman.png',
+            'Arakni, Marionette': 'Arakni Marionette.png',
+            'Vynnset, Iron Maiden': 'Vynnset.png',
+            'Arakni, 5L!p3d 7hRu 7h3 cR4X': 'arakni slipped thru the cracks.png',
+            'Olympia Prized Fighter': 'Olympia.png',
+            'Oscilio Constella Intelligence': 'Oscilio.png',
+            'Riptide, Lurker of the Deep': 'Riptide.png',
+            'Florian, Rotwood Harbinger': 'Florian.png',
+            'Ira, Crimson Haze': 'Ira.png',
+            'Jarl Vetreiði': 'Jarl.png',
+            'Enigma, Ledger of Ancestry': 'Enigma.png',
+            'Fang, Dracai of Blades': 'Fang.png',
+            'Cindra, Dracai of Retribution': 'Cindra.png',
+            'Dash I/O': 'Dash_IO.png',
+            'Betsy, Skin in the Game': 'Betsy.png',
+            'Aurora, Shooting Star': 'Aurora.png',
+            'Maxx "The Hype" Nitro': 'Maxx.png',
+            'Nuu, Alluring Desire': 'Nuu.png',
+            'Zen, Tamer of Purpose': 'Zen.png',
+            'Verdance, Thorn of the Rose': 'Verdance.png'
+        };
+
+        function getHeroImage(heroName) {
+            return heroImages[heroName] || 'default.jpg';
+        }
+
+        function createPlayerEntry(player, record) {
+            // Create the player frame container
+            const entry = document.createElement('div');
+            entry.className = 'player-frame';
+
+            // Create hero image if hero is specified
+            if (player.hero && heroImages[player.hero]) {
+                const heroImage = document.createElement('img');
+                heroImage.className = 'hero-image';
+                heroImage.src = `/static/Heroes/${heroImages[player.hero]}`;
+                heroImage.alt = '';
+                heroImage.onerror = function() {
+                    this.style.display = 'none';
+                };
+                entry.appendChild(heroImage);
+            }
+
+            // Create flag image if flag is specified
+            if (player.flag) {
+                const flagImage = document.createElement('img');
+                flagImage.className = 'flag';
+                flagImage.src = `https://flagsapi.com/${player.flag}/flat/64.png`;
+                flagImage.alt = '';
+                entry.appendChild(flagImage);
+            }
+
+            const nameElement = document.createElement('div');
+            nameElement.className = 'player-name';
+            nameElement.textContent = player.name;
+            entry.appendChild(nameElement);
+
+            const scoreElement = document.createElement('div');
+            scoreElement.className = 'player-score';
+            scoreElement.textContent = record;
+            entry.appendChild(scoreElement);
+
+            return entry;
+        }
+
+        async function updateStandings() {
+            try {
+                // Fetch current round
+                const roundResponse = await fetch('/get-round');
+                const roundData = await roundResponse.json();
+                const currentRound = roundData.round;
+
+                // Fetch standings
+                const standingsResponse = await fetch('/standings');
+                const data = await standingsResponse.json();
+                
+                if (data.standings || data.droppedPlayers) {
+                    const container = document.getElementById('content');
+                    // Clear existing content before adding new entries
+                    container.innerHTML = '';
+
+                    // Create a map to store player status and data
+                    const playerStatusMap = new Map();
+
+                    // Process all players (both active and dropped)
+                    const allPlayers = [...data.standings, ...(data.droppedPlayers || [])];
+                    allPlayers.forEach(function(entry) {
+                        const matchedName = findPlayerMatch(entry.player);
+                        if (matchedName) {
+                            playerStatusMap.set(matchedName, {
+                                name: matchedName,
+                                isDropped: entry.isDropped || false,
+                                wins: parseInt(entry.wins),
+                                flag: entry.flag,
+                                hero: entry.hero
+                            });
+                        }
+                    });
+
+                    // Generate entries for each team player
+                    TEAM_PLAYERS.forEach(function(playerName) {
+                        const playerData = playerStatusMap.get(playerName);
+                        let record = '0-0';
+                        
+                        if (playerData) {
+                            if (playerData.isDropped) {
+                                record = 'DROP';
+                            } else {
+                                const wins = playerData.wins;
+                                const losses = wins >= currentRound ? 0 : currentRound - wins;
+                                record = `${wins}-${losses}`;
+                            }
+                            
+                            const playerEntry = createPlayerEntry(playerData, record);
+                            container.appendChild(playerEntry);
+                        } else {
+                            // Create entry for player not found in standings
+                            const playerEntry = createPlayerEntry({ name: playerName }, 'N/A');
+                            container.appendChild(playerEntry);
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error('Error updating standings:', error);
+            }
+        }
+
+        // Update standings immediately and then every 5 seconds
+        updateStandings();
+        setInterval(updateStandings, 5000);
+    </script>
+</body>
+</html> 

@@ -283,6 +283,38 @@
             margin-top: 10px;
             color: #ccc;
         }
+
+        .team-management {
+            background: #1a1a1a;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .team-management h2 {
+            color: #CBA655;
+            margin-top: 0;
+        }
+
+        .team-management .button {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #CBA655;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            margin: 10px 0;
+            transition: background-color 0.3s;
+        }
+
+        .team-management .button:hover {
+            background: #B08F49;
+        }
+
+        .team-management .description {
+            color: #ccc;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
@@ -317,9 +349,16 @@
 
         <div class="stream-customization">
             <h2>Stream Customization</h2>
-            <p>Customize the appearance of your stream overlay:</p>
-            <a href="/stream-management" class="customize-button">Customize Stream View</a>
-            <p class="customize-description">Change colors, upload background, and preview changes in real-time</p>
+            <p>Customize your stream overlay with different colors and backgrounds.</p>
+            <a href="/stream-management" class="button">Customize Stream View</a>
+            <p class="description">Change colors, upload backgrounds, and preview your stream overlay in real-time.</p>
+        </div>
+
+        <div class="team-management">
+            <h2>Team Management</h2>
+            <p>Create and manage your team's standings view.</p>
+            <a href="/team-management" class="button">Manage Teams</a>
+            <p class="description">Create 7, 9, or 11 player teams, upload backgrounds, and get a unique URL for your team's standings.</p>
         </div>
 
         <div class="players-management">

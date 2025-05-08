@@ -11,6 +11,7 @@ import os
 from pathlib import Path
 import json
 import shutil
+import uuid
 
 # Configure logging
 logging.basicConfig(
@@ -83,6 +84,32 @@ current_settings = load_settings()
 
 # Store the list of players to watch
 WATCHED_PLAYERS = []
+
+# Teams storage
+TEAMS_FILE = "teams.json"
+TEAMS_DIR = Path("static/teams")
+
+def load_teams():
+    try:
+        if os.path.exists(TEAMS_FILE):
+            with open(TEAMS_FILE, 'r') as f:
+                return json.load(f)
+        return {}
+    except Exception as e:
+        logger.error(f"Error loading teams: {e}")
+        return {}
+
+def save_teams(teams):
+    try:
+        with open(TEAMS_FILE, 'w') as f:
+            json.dump(teams, f)
+        return True
+    except Exception as e:
+        logger.error(f"Error saving teams: {e}")
+        return False
+
+# Load existing teams
+teams = load_teams()
 
 @app.get("/")
 async def read_root(request: Request):
@@ -387,6 +414,101 @@ async def save_stream_settings(settings: dict):
             status_code=500,
             content={"success": False, "message": f"Error saving settings: {str(e)}"}
         )
+
+@app.get("/team-management")
+async def team_management(request: Request):
+    return templates.TemplateResponse("team_management.html", {"request": request})
+
+@app.get("/team-preview")
+async def team_preview(request: Request):
+    size = request.query_params.get("size", "7")
+    players = request.query_params.get("players", "[]")
+    try:
+        player_list = json.loads(players)
+    except:
+        player_list = []
+    
+    return templates.TemplateResponse("team.html", {
+        "request": request,
+        "team_id": "preview",
+        "team_size": int(size),
+        "players": player_list,
+        "current_settings": current_settings
+    })
+
+@app.post("/save-team")
+async def save_team(team_data: dict):
+    try:
+        team_id = str(uuid.uuid4())
+        teams[team_id] = {
+            "size": team_data["size"],
+            "players": team_data["players"]
+        }
+        
+        if save_teams(teams):
+            return JSONResponse(content={
+                "success": True,
+                "message": "Team saved successfully",
+                "teamId": team_id
+            })
+        else:
+            return JSONResponse(
+                status_code=500,
+                content={"success": False, "message": "Failed to save team"}
+            )
+    except Exception as e:
+        logger.error(f"Error saving team: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "message": f"Error saving team: {str(e)}"}
+        )
+
+@app.post("/upload-team-background")
+async def upload_team_background(background: UploadFile = File(...), team_id: str = Form(None)):
+    try:
+        # Ensure teams directory exists
+        TEAMS_DIR.mkdir(exist_ok=True)
+        
+        # If no team_id provided, use 'preview'
+        if not team_id:
+            team_id = "preview"
+        
+        # Create team directory if it doesn't exist
+        team_dir = TEAMS_DIR / team_id
+        team_dir.mkdir(exist_ok=True)
+        
+        # Save the uploaded file
+        file_path = team_dir / "background.png"
+        
+        # Read the file content
+        content = await background.read()
+        
+        # Save the file
+        with file_path.open("wb") as buffer:
+            buffer.write(content)
+            
+        logger.info(f"Team background image uploaded successfully to {file_path}")
+        return JSONResponse(content={"success": True, "message": "Team background uploaded successfully"})
+    except Exception as e:
+        logger.error(f"Error uploading team background: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "message": f"Error uploading team background: {str(e)}"}
+        )
+
+@app.get("/team/{team_id}")
+async def view_team(request: Request, team_id: str):
+    if team_id not in teams:
+        raise HTTPException(status_code=404, detail="Team not found")
+    
+    team = teams[team_id]
+    return templates.TemplateResponse("team.html", {
+        "request": request,
+        "team_id": team_id,
+        "team_size": int(team["size"]),
+        "players": team["players"],
+        "current_settings": current_settings
+    })
 
 if __name__ == "__main__":
     import uvicorn
