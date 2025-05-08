@@ -49,8 +49,12 @@
             font-style: normal;
             font-weight: 400;
             font-size: 56px;
-            line-height: 120%;
-            color: {{ playerNameColor|default('#CBA655') }};
+            line-height: 67px;
+            color: {{ current_settings.playerNameColor }};
+            white-space: nowrap;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
         }
 
         /* Player score styling */
@@ -64,9 +68,9 @@
             font-style: normal;
             font-weight: 400;
             font-size: 56px;
-            line-height: 120%;
+            line-height: 67px;
             text-align: right;
-            color: {{ playerScoreColor|default('#000000') }};
+            color: {{ current_settings.playerScoreColor }};
         }
 
         .flag {
