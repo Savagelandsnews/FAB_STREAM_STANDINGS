@@ -328,8 +328,8 @@ async def upload_background(background: UploadFile = File(...)):
         static_dir = Path("static")
         static_dir.mkdir(exist_ok=True)
         
-        # Save the uploaded file
-        file_path = static_dir / "background.png"
+        # Save the uploaded file as stream background
+        file_path = static_dir / "stream_background.png"
         
         # Read the file content
         content = await background.read()
@@ -338,13 +338,39 @@ async def upload_background(background: UploadFile = File(...)):
         with file_path.open("wb") as buffer:
             buffer.write(content)
             
-        logger.info(f"Background image uploaded successfully to {file_path}")
-        return JSONResponse(content={"success": True, "message": "Background uploaded successfully"})
+        logger.info(f"Stream background image uploaded successfully to {file_path}")
+        return JSONResponse(content={"success": True, "message": "Stream background uploaded successfully"})
     except Exception as e:
-        logger.error(f"Error uploading background: {e}")
+        logger.error(f"Error uploading stream background: {e}")
         return JSONResponse(
             status_code=500,
-            content={"success": False, "message": f"Error uploading background: {str(e)}"}
+            content={"success": False, "message": f"Error uploading stream background: {str(e)}"}
+        )
+
+@app.post("/upload-players-background")
+async def upload_players_background(background: UploadFile = File(...)):
+    try:
+        # Ensure static directory exists
+        static_dir = Path("static")
+        static_dir.mkdir(exist_ok=True)
+        
+        # Save the uploaded file as players background
+        file_path = static_dir / "players_background.png"
+        
+        # Read the file content
+        content = await background.read()
+        
+        # Save the file
+        with file_path.open("wb") as buffer:
+            buffer.write(content)
+            
+        logger.info(f"Players background image uploaded successfully to {file_path}")
+        return JSONResponse(content={"success": True, "message": "Players background uploaded successfully"})
+    except Exception as e:
+        logger.error(f"Error uploading players background: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "message": f"Error uploading players background: {str(e)}"}
         )
 
 @app.post("/save-settings")
