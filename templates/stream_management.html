@@ -142,6 +142,22 @@
             background: #f8d7da;
             color: #721c24;
         }
+
+        .color-control {
+            margin-bottom: 10px;
+        }
+
+        .color-control label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .color-control input[type="text"] {
+            width: 100%;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
     </style>
 </head>
 <body>
@@ -178,6 +194,19 @@
             <div class="section">
                 <button onclick="saveSettings()">Save All Settings</button>
                 <div id="saveStatus" class="save-status"></div>
+            </div>
+
+            <div class="color-control">
+                <label for="playerNameColor">Player Name Color:</label>
+                <input type="text" id="playerNameColor" value="#FFFFFF" placeholder="#FFFFFF">
+            </div>
+            <div class="color-control">
+                <label for="rankColor">Rank Color:</label>
+                <input type="text" id="rankColor" value="#FF9500" placeholder="#FF9500">
+            </div>
+            <div class="color-control">
+                <label for="playerScoreColor">Player Score Color:</label>
+                <input type="text" id="playerScoreColor" value="#FF9500" placeholder="#FF9500">
             </div>
         </div>
 
@@ -224,10 +253,39 @@
             window.addEventListener('resize', updateScale);
         }
 
-        // Add event listeners to color inputs
-        document.querySelectorAll('input[type="color"]').forEach(input => {
-            input.addEventListener('change', updatePreview);
-        });
+        // Function to validate hex color
+        function isValidHexColor(color) {
+            return /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(color);
+        }
+
+        // Function to update colors
+        function updateColors() {
+            const playerNameColor = document.getElementById('playerNameColor').value;
+            const rankColor = document.getElementById('rankColor').value;
+            const playerScoreColor = document.getElementById('playerScoreColor').value;
+
+            // Validate colors
+            if (!isValidHexColor(playerNameColor) || !isValidHexColor(rankColor) || !isValidHexColor(playerScoreColor)) {
+                alert('Please enter valid hex color codes (e.g., #FF9500)');
+                return;
+            }
+
+            // Update preview
+            const previewFrame = document.getElementById('previewFrame');
+            previewFrame.contentWindow.postMessage({
+                type: 'updateColors',
+                colors: {
+                    playerNameColor,
+                    rankColor,
+                    playerScoreColor
+                }
+            }, '*');
+        }
+
+        // Add input event listeners for color fields
+        document.getElementById('playerNameColor').addEventListener('input', updateColors);
+        document.getElementById('rankColor').addEventListener('input', updateColors);
+        document.getElementById('playerScoreColor').addEventListener('input', updateColors);
 
         // Function to upload background
         async function uploadBackground() {
