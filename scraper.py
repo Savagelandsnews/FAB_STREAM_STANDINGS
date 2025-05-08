@@ -281,7 +281,7 @@ async def get_standings(source: str = None):
         logger.info(f"Found {len(standings)} active players and {len(dropped_players)} dropped players")
         
         # Only apply row range filter if not from a team page
-        if source not in ['bluepitch', 'runaways', 'armory', 'sigil', 'vampires', 'players']:
+        if source not in ['players']:
             standings = standings[row_range["start"]:row_range["end"]]
             logger.info(f"Returning standings rows {row_range['start'] + 1}-{row_range['end']} of {len(standings)} total entries")
         else:
@@ -292,7 +292,7 @@ async def get_standings(source: str = None):
             "standings": standings,
             "droppedPlayers": dropped_players,
             "total": len(standings) + len(dropped_players),
-            "showing": "all" if source in ['bluepitch', 'runaways', 'armory', 'sigil', 'vampires', 'players'] else f"{row_range['start'] + 1}-{row_range['end']}"
+            "showing": "all" if source in ['players'] else f"{row_range['start'] + 1}-{row_range['end']}"
         })
         
     except Exception as e:
