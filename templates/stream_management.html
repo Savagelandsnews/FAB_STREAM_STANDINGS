@@ -169,44 +169,36 @@
                     <div class="color-item">
                         <label>Rank Number:</label>
                         <input type="color" id="rankColor" value="#CBA655">
+                        <input type="text" id="rankColorText" value="#CBA655" placeholder="#CBA655">
                     </div>
                     <div class="color-item">
                         <label>Player Name:</label>
                         <input type="color" id="playerNameColor" value="#CBA655">
+                        <input type="text" id="playerNameColorText" value="#CBA655" placeholder="#CBA655">
                     </div>
                     <div class="color-item">
                         <label>Player Score:</label>
                         <input type="color" id="playerScoreColor" value="#000000">
+                        <input type="text" id="playerScoreColorText" value="#000000" placeholder="#000000">
                     </div>
                     <div class="color-item">
                         <label>Round Title:</label>
                         <input type="color" id="roundTitleColor" value="#CBA655">
+                        <input type="text" id="roundTitleColorText" value="#CBA655" placeholder="#CBA655">
                     </div>
                 </div>
             </div>
 
             <div class="section">
                 <h2>Background Image</h2>
-                <input type="file" id="backgroundImage" accept="image/*">
+                <input type="file" id="backgroundImage" accept="image/*" onchange="handleFileSelect(event)">
                 <button onclick="uploadBackground()">Upload Background</button>
+                <div id="uploadStatus" class="save-status"></div>
             </div>
 
             <div class="section">
                 <button onclick="saveSettings()">Save All Settings</button>
                 <div id="saveStatus" class="save-status"></div>
-            </div>
-
-            <div class="color-control">
-                <label for="playerNameColor">Player Name Color:</label>
-                <input type="text" id="playerNameColor" value="#FFFFFF" placeholder="#FFFFFF">
-            </div>
-            <div class="color-control">
-                <label for="rankColor">Rank Color:</label>
-                <input type="text" id="rankColor" value="#FF9500" placeholder="#FF9500">
-            </div>
-            <div class="color-control">
-                <label for="playerScoreColor">Player Score Color:</label>
-                <input type="text" id="playerScoreColor" value="#FF9500" placeholder="#FF9500">
             </div>
         </div>
 
@@ -222,6 +214,19 @@
     </div>
 
     <script>
+        // Function to handle file selection
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                if (!file.type.startsWith('image/')) {
+                    showStatus('Please select an image file', false, 'uploadStatus');
+                    event.target.value = '';
+                    return;
+                }
+                showStatus('File selected: ' + file.name, true, 'uploadStatus');
+            }
+        }
+
         // Function to update preview with scaling
         function updatePreview() {
             const previewFrame = document.getElementById('previewFrame');
@@ -235,8 +240,8 @@
             function updateScale() {
                 const containerWidth = previewContent.clientWidth;
                 const containerHeight = previewContent.clientHeight;
-                const scaleX = containerWidth / 1920; // Original width
-                const scaleY = containerHeight / 1080; // Original height
+                const scaleX = containerWidth / 1920;
+                const scaleY = containerHeight / 1080;
                 const scale = Math.min(scaleX, scaleY);
                 
                 previewFrame.style.transform = `scale(${scale})`;
@@ -246,10 +251,7 @@
                 scaleIndicator.textContent = `Scale: ${Math.round(scale * 100)}%`;
             }
             
-            // Update scale when iframe loads
             previewFrame.onload = updateScale;
-            
-            // Update scale on window resize
             window.addEventListener('resize', updateScale);
         }
 
@@ -263,42 +265,56 @@
             const playerNameColor = document.getElementById('playerNameColor').value;
             const rankColor = document.getElementById('rankColor').value;
             const playerScoreColor = document.getElementById('playerScoreColor').value;
+            const roundTitleColor = document.getElementById('roundTitleColor').value;
 
-            // Validate colors
-            if (!isValidHexColor(playerNameColor) || !isValidHexColor(rankColor) || !isValidHexColor(playerScoreColor)) {
-                alert('Please enter valid hex color codes (e.g., #FF9500)');
-                return;
-            }
+            // Update text inputs
+            document.getElementById('playerNameColorText').value = playerNameColor;
+            document.getElementById('rankColorText').value = rankColor;
+            document.getElementById('playerScoreColorText').value = playerScoreColor;
+            document.getElementById('roundTitleColorText').value = roundTitleColor;
 
             // Update preview
-            const previewFrame = document.getElementById('previewFrame');
-            previewFrame.contentWindow.postMessage({
-                type: 'updateColors',
-                colors: {
-                    playerNameColor,
-                    rankColor,
-                    playerScoreColor
-                }
-            }, '*');
+            updatePreview();
         }
 
         // Add input event listeners for color fields
         document.getElementById('playerNameColor').addEventListener('input', updateColors);
         document.getElementById('rankColor').addEventListener('input', updateColors);
         document.getElementById('playerScoreColor').addEventListener('input', updateColors);
+        document.getElementById('roundTitleColor').addEventListener('input', updateColors);
+
+        // Add input event listeners for text color fields
+        document.getElementById('playerNameColorText').addEventListener('input', function(e) {
+            if (isValidHexColor(e.target.value)) {
+                document.getElementById('playerNameColor').value = e.target.value;
+                updateColors();
+            }
+        });
+        document.getElementById('rankColorText').addEventListener('input', function(e) {
+            if (isValidHexColor(e.target.value)) {
+                document.getElementById('rankColor').value = e.target.value;
+                updateColors();
+            }
+        });
+        document.getElementById('playerScoreColorText').addEventListener('input', function(e) {
+            if (isValidHexColor(e.target.value)) {
+                document.getElementById('playerScoreColor').value = e.target.value;
+                updateColors();
+            }
+        });
+        document.getElementById('roundTitleColorText').addEventListener('input', function(e) {
+            if (isValidHexColor(e.target.value)) {
+                document.getElementById('roundTitleColor').value = e.target.value;
+                updateColors();
+            }
+        });
 
         // Function to upload background
         async function uploadBackground() {
             const fileInput = document.getElementById('backgroundImage');
             const file = fileInput.files[0];
             if (!file) {
-                showStatus('Please select a file first', false);
-                return;
-            }
-
-            // Check file type
-            if (!file.type.startsWith('image/')) {
-                showStatus('Please select an image file', false);
+                showStatus('Please select a file first', false, 'uploadStatus');
                 return;
             }
 
@@ -306,7 +322,7 @@
             formData.append('background', file);
 
             try {
-                showStatus('Uploading background...', true);
+                showStatus('Uploading background...', true, 'uploadStatus');
                 const response = await fetch('/upload-background', {
                     method: 'POST',
                     body: formData
@@ -315,15 +331,15 @@
                 const result = await response.json();
                 
                 if (response.ok) {
-                    showStatus('Background uploaded successfully!', true);
+                    showStatus('Background uploaded successfully!', true, 'uploadStatus');
                     // Force iframe to reload to show new background
                     const previewFrame = document.getElementById('previewFrame');
                     previewFrame.src = previewFrame.src;
                 } else {
-                    showStatus(`Failed to upload background: ${result.message}`, false);
+                    showStatus(`Failed to upload background: ${result.message}`, false, 'uploadStatus');
                 }
             } catch (error) {
-                showStatus(`Error uploading background: ${error.message}`, false);
+                showStatus(`Error uploading background: ${error.message}`, false, 'uploadStatus');
             }
         }
 
@@ -346,18 +362,18 @@
                 });
 
                 if (response.ok) {
-                    showStatus('Settings saved successfully!', true);
+                    showStatus('Settings saved successfully!', true, 'saveStatus');
                 } else {
-                    showStatus('Failed to save settings', false);
+                    showStatus('Failed to save settings', false, 'saveStatus');
                 }
             } catch (error) {
-                showStatus('Error saving settings', false);
+                showStatus('Error saving settings', false, 'saveStatus');
             }
         }
 
         // Function to show status messages
-        function showStatus(message, isSuccess) {
-            const statusDiv = document.getElementById('saveStatus');
+        function showStatus(message, isSuccess, elementId) {
+            const statusDiv = document.getElementById(elementId);
             statusDiv.textContent = message;
             statusDiv.style.display = 'block';
             statusDiv.className = 'save-status ' + (isSuccess ? 'success' : 'error');
