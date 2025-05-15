@@ -366,6 +366,11 @@ async def upload_background(background: UploadFile = File(...)):
             buffer.write(content)
             
         logger.info(f"Stream background image uploaded successfully to {file_path}")
+        
+        # Verify the file was written
+        if not file_path.exists():
+            raise Exception("File was not written successfully")
+            
         return JSONResponse(content={"success": True, "message": "Stream background uploaded successfully"})
     except Exception as e:
         logger.error(f"Error uploading stream background: {e}")
