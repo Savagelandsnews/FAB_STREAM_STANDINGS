@@ -346,15 +346,20 @@ async def get_round():
 @app.post("/upload-background")
 async def upload_background(background: UploadFile = File(...)):
     try:
+        logger.info(f"Received background upload request: {background.filename}")
+        
         # Ensure static directory exists
         static_dir = Path("static")
         static_dir.mkdir(exist_ok=True)
+        logger.info(f"Static directory path: {static_dir.absolute()}")
         
         # Save the uploaded file as stream background
         file_path = static_dir / "stream_background.png"
+        logger.info(f"Target file path: {file_path.absolute()}")
         
         # Read the file content
         content = await background.read()
+        logger.info(f"Read {len(content)} bytes from uploaded file")
         
         # Save the file
         with file_path.open("wb") as buffer:
@@ -372,15 +377,20 @@ async def upload_background(background: UploadFile = File(...)):
 @app.post("/upload-players-background")
 async def upload_players_background(background: UploadFile = File(...)):
     try:
+        logger.info(f"Received players background upload request: {background.filename}")
+        
         # Ensure static directory exists
         static_dir = Path("static")
         static_dir.mkdir(exist_ok=True)
+        logger.info(f"Static directory path: {static_dir.absolute()}")
         
         # Save the uploaded file as players background
         file_path = static_dir / "players_background.png"
+        logger.info(f"Target file path: {file_path.absolute()}")
         
         # Read the file content
         content = await background.read()
+        logger.info(f"Read {len(content)} bytes from uploaded file")
         
         # Save the file
         with file_path.open("wb") as buffer:
