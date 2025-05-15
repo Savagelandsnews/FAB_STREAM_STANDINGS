@@ -210,38 +210,7 @@
             color: #008800;
         }
 
-        .stream-customization {
-            margin-top: 20px;
-            padding: 20px;
-            background-color: #333;
-            border-radius: 4px;
-        }
-
-        .stream-customization h2 {
-            color: #00aa00;
-            margin-top: 0;
-        }
-
-        .customize-button {
-            display: inline-block;
-            padding: 10px 20px;
-            background-color: #00aa00;
-            color: white;
-            text-decoration: none;
-            border-radius: 4px;
-            font-weight: bold;
-            transition: background-color 0.3s;
-        }
-
-        .customize-button:hover {
-            background-color: #008800;
-        }
-
-        .customize-description {
-            margin-top: 10px;
-            color: #ccc;
-        }
-
+        .stream-customization,
         .players-management {
             margin-top: 20px;
             padding: 20px;
@@ -249,11 +218,13 @@
             border-radius: 4px;
         }
 
+        .stream-customization h2,
         .players-management h2 {
             color: #00aa00;
             margin-top: 0;
         }
 
+        .customize-button,
         .manage-players-button {
             display: inline-block;
             padding: 10px 20px;
@@ -265,45 +236,20 @@
             transition: background-color 0.3s;
         }
 
+        .customize-button:hover,
         .manage-players-button:hover {
             background-color: #008800;
         }
 
+        .customize-description,
         .players-description {
             margin-top: 10px;
             color: #ccc;
         }
 
+        /* Hide team management section */
         .team-management {
-            background: #1a1a1a;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
-
-        .team-management h2 {
-            color: #CBA655;
-            margin-top: 0;
-        }
-
-        .team-management .button {
-            display: inline-block;
-            padding: 10px 20px;
-            background: #CBA655;
-            color: white;
-            text-decoration: none;
-            border-radius: 4px;
-            margin: 10px 0;
-            transition: background-color 0.3s;
-        }
-
-        .team-management .button:hover {
-            background: #B08F49;
-        }
-
-        .team-management .description {
-            color: #ccc;
-            margin-top: 10px;
+            display: none;
         }
     </style>
 </head>
@@ -340,31 +286,25 @@
         <div class="stream-customization">
             <h2>Stream Customization</h2>
             <p>Customize your stream overlay with different colors and backgrounds.</p>
-            <a href="/stream-management" class="button">Customize Stream View</a>
-            <p class="description">Change colors, upload backgrounds, and preview your stream overlay in real-time.</p>
-        </div>
-
-        <div class="team-management">
-            <h2>Team Management</h2>
-            <p>Create and manage your team's standings view.</p>
-            <a href="/team-management" class="button">Manage Teams</a>
-            <p class="description">Create 7, 9, or 11 player teams, upload backgrounds, and get a unique URL for your team's standings.</p>
+            <a href="/stream-management" class="customize-button">Customize Stream View</a>
+            <p class="customize-description">Change colors, upload backgrounds, and preview your stream overlay in real-time.</p>
         </div>
 
         <div class="players-management">
             <h2>Players to Watch</h2>
+            <p>Track specific players' standings, records, and stats in real-time.</p>
             <a href="/players-management" class="manage-players-button">Manage Players to Watch</a>
             <p class="players-description">Add up to 10 players to track their standings, records, and stats in real-time.</p>
         </div>
 
         <div class="stream-info">
-            <h2>Stream View</h2>
+            <h2>Standings</h2>
             <p>Use this URL in OBS Browser Source:</p>
             <div class="stream-url">
                 <span id="streamUrl"></span>
                 <button class="copy-button" onclick="copyStreamUrl()">Copy</button>
             </div>
-            <a href="/stream" target="_blank" class="view-stream">Open Stream View in New Tab →</a><br>
+            <a href="/stream" target="_blank" class="view-stream">Open Standings in New Tab →</a><br>
             <a href="/players" target="_blank" class="view-players">Open Players to Watch →</a>
         </div>
     </div>
