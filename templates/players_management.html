@@ -260,6 +260,8 @@
 
         function updatePreview() {
             const previewFrame = document.getElementById('previewFrame');
+            const previewContent = document.querySelector('.preview-content');
+            const scaleIndicator = document.getElementById('scaleValue');
             
             // Get all player names
             const playerNames = Array.from(document.querySelectorAll('.player-name-input'))
