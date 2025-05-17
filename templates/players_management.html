@@ -290,6 +290,9 @@
             window.addEventListener('resize', updateScale);
         }
 
+        // Initial preview update
+        updatePreview();
+
         async function savePlayers() {
             const playerNames = Array.from(document.querySelectorAll('.player-name-input'))
                 .map(input => input.value.trim())
